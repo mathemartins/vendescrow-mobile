@@ -1,6 +1,9 @@
-import 'dart:async';
-
+import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/component/User/UserModel.dart';
+import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
+import 'package:crypto_v2/component/market/LiveCrypto.dart';
 import 'package:crypto_v2/component/market/btcModel.dart';
+import 'package:crypto_v2/screen/home/LiveCryptoAsset.dart';
 import 'package:crypto_v2/screen/market/detailCrypto/btcDetail.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -14,29 +17,33 @@ class btc extends StatefulWidget {
 }
 
 class _btcState extends State<btc> {
-  ///
-  /// Get image data dummy from firebase server
-  ///
-  var imageNetwork = NetworkImage(
-      "https://firebasestorage.googleapis.com/v0/b/beauty-look.appspot.com/o/a.jpg?alt=media&token=e36bbee2-4bfb-4a94-bd53-4055d29358e2");
+  List<LiveCrypto> _liveCrypto = List<LiveCrypto>();
+  APIService apiService = new APIService();
+  User user = User();
+  BlackMarketRate _blackMarketRate = BlackMarketRate();
+  bool loadData = true;
 
-  ///
-  /// check the condition is right or wrong for image loaded or no
-  ///
-  bool loadImage = true;
-
-  @override
-
-  /// To set duration initState auto start if FlashSale Layout open
   @override
   void initState() {
-    Timer(Duration(seconds: 3), () {
+    super.initState();
+    apiService.getLiveCryptoData().then((value) {
       setState(() {
-        loadImage = false;
+        _liveCrypto.addAll(value);
       });
     });
-    // TODO: implement initState
-    super.initState();
+
+    fetchPageData();
+  }
+
+  void fetchPageData() async {
+    var responseFiatData = await apiService.get('fiat-rates/');
+    var responseCurrentUser = await apiService.getCurrentUser();
+
+    setState(() {
+      user = responseCurrentUser;
+      _blackMarketRate = BlackMarketRate.fromJson(responseFiatData['data'][0]);
+      loadData = false;
+    });
   }
 
   Widget build(BuildContext context) {
@@ -84,14 +91,13 @@ class _btcState extends State<btc> {
           height: 0.0,
         ),
 
-        ///
-        ///
         /// check the condition if image data from server firebase loaded or no
         /// if image loaded true (image still downloading from server)
         /// Card to set card loading animation
-        ///
 
-        loadImage ? _loadingData(context) : _dataLoaded(context),
+        loadData
+            ? _loadingData(context)
+            : _dataLoaded(context, _liveCrypto, user, _blackMarketRate),
       ],
     ));
   }
@@ -228,25 +234,22 @@ Widget loadingCard(BuildContext ctx, btcMarket item) {
   );
 }
 
-///
-///
-/// Calling ImageLoaded animation for set a grid layout
-///
-///
-Widget _dataLoaded(BuildContext context) {
+Widget _dataLoaded(
+    BuildContext context, List<LiveCrypto> liveCrypto, user, blackmarketRate) {
   return Container(
     child: ListView.builder(
       shrinkWrap: true,
       primary: false,
-      itemCount: btcMarketList.length,
+      itemCount: liveCrypto.length,
       itemBuilder: (ctx, i) {
-        return card(ctx, btcMarketList[i]);
+        return card(ctx, liveCrypto[i], user, blackmarketRate);
       },
     ),
   );
 }
 
-Widget card(BuildContext ctx, btcMarket item) {
+Widget card(BuildContext ctx, LiveCrypto item, User user,
+    BlackMarketRate blackMarketRate) {
   return Padding(
     padding: const EdgeInsets.only(top: 7.0),
     child: Column(
@@ -254,7 +257,8 @@ Widget card(BuildContext ctx, btcMarket item) {
         InkWell(
           onTap: () {
             Navigator.of(ctx).push(PageRouteBuilder(
-                pageBuilder: (_, __, ___) => new btcDetail(item: item)));
+              pageBuilder: (_, __, ___) => new btcDetail(item: item),
+            ));
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -267,14 +271,8 @@ Widget card(BuildContext ctx, btcMarket item) {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.only(left: 5.0, right: 12.0),
-                      child: Image.asset(
-                        item.icon,
-                        height: 22.0,
-                        fit: BoxFit.contain,
-                        width: 22.0,
-                      ),
-                    ),
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Text(item.cmcRank.toString())),
                     Container(
                       width: 95.0,
                       child: Column(
@@ -284,21 +282,17 @@ Widget card(BuildContext ctx, btcMarket item) {
                           Row(
                             children: <Widget>[
                               Text(
-                                item.name,
+                                item.symbol,
                                 style: TextStyle(
                                     fontFamily: "Popins", fontSize: 16.5),
-                              ),
-                              Text(
-                                "/BTC",
-                                style: TextStyle(
-                                    fontFamily: "Popins",
-                                    fontSize: 11.5,
-                                    color: Theme.of(ctx).hintColor),
                               ),
                             ],
                           ),
                           Text(
-                            item.pairValue,
+                            getPriceInUserFiat(
+                                item.quote.uSD.price,
+                                blackMarketRate.country,
+                                blackMarketRate.dollarRate),
                             style: TextStyle(
                                 fontFamily: "Popins",
                                 fontSize: 11.5,
@@ -317,14 +311,15 @@ Widget card(BuildContext ctx, btcMarket item) {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      item.priceValue,
+                      getPriceInUserFiat(item.quote.uSD.price,
+                          blackMarketRate.country, blackMarketRate.dollarRate),
                       style: TextStyle(
                           fontFamily: "Popins",
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      item.priceDollar,
+                      "\u{0024} ${item.quote.uSD.price.toStringAsFixed(2)}",
                       style: TextStyle(
                           fontFamily: "Popins",
                           fontSize: 11.5,
@@ -338,13 +333,16 @@ Widget card(BuildContext ctx, btcMarket item) {
                 child: Container(
                     height: 25.0,
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(2.0)),
-                        color: item.colorChg),
+                      borderRadius: BorderRadius.all(Radius.circular(2.0)),
+                      color: item.quote.uSD.percentChange24h < 0
+                          ? Colors.redAccent
+                          : Color(0xFF00C087),
+                    ),
                     child: Center(
                         child: Padding(
                       padding: const EdgeInsets.only(left: 5.0, right: 5.0),
                       child: Text(
-                        item.percent,
+                        "${item.quote.uSD.percentChange24h.toStringAsFixed(2)}%",
                         style: TextStyle(
                             fontWeight: FontWeight.w600, color: Colors.white),
                       ),

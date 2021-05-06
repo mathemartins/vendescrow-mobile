@@ -108,6 +108,23 @@ class Helper {
         host: Uri.parse(GlobalConfiguration().getValue('base_url')).host,
         port: Uri.parse(GlobalConfiguration().getValue('base_url')).port,
         path: _path + path);
+    print(uri);
+    return uri;
+  }
+
+  static Uri getExternalUri(String urlpath) {
+    String _path =
+        Uri.parse(GlobalConfiguration().getValue('coin_market_cap_api_url'))
+            .path;
+    if (!_path.endsWith('/')) {
+      _path += '/';
+    }
+    Uri uri = Uri(
+        scheme: Uri.parse(GlobalConfiguration().getValue('base_url')).scheme,
+        host: Uri.parse(GlobalConfiguration().getValue('base_url')).host,
+        port: Uri.parse(GlobalConfiguration().getValue('base_url')).port,
+        path: _path + urlpath);
+    print(uri);
     return uri;
   }
 }

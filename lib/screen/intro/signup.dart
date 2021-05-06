@@ -307,13 +307,6 @@ class _signUpState extends State<signUp> {
                               print(_user.toJson());
                               registerAction();
                             }
-                            Navigator.of(context).pushReplacement(
-                              PageRouteBuilder(
-                                pageBuilder: (_, __, ___) => bottomNavBar(
-                                  themeBloc: _themeBloc,
-                                ),
-                              ),
-                            );
                           },
                           child: Container(
                             height: 40.0,
@@ -403,6 +396,13 @@ class _signUpState extends State<signUp> {
         addObjectToSharedPreference(value.token);
         scaffoldKey.currentState.showSnackBar(snackBar);
         print(CustomTrace(StackTrace.current, message: "data-payload: $value"));
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => bottomNavBar(
+              themeBloc: _themeBloc,
+            ),
+          ),
+        );
       } else {
         final snackBar = SnackBar(
           content: Text("Account Registration Error!"),

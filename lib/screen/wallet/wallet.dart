@@ -1,15 +1,16 @@
 import 'dart:math';
-import 'dart:ui' as ui;
-import 'package:crypto_v2/component/AssetsWallet/assetsModel.dart';
+
+import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/component/AssetsWallet/EthereumWallet.dart';
+import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
 import 'package:crypto_v2/screen/wallet/walletDetail.dart';
-import 'package:flutter/services.dart';
-import 'package:vector_math/vector_math.dart' as Vector;
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter/animation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
-import 'package:crypto_v2/component/style.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:vector_math/vector_math.dart' as Vector;
 
 class wallet extends StatefulWidget {
   @override
@@ -24,81 +25,203 @@ class wallet extends StatefulWidget {
 }
 
 class _walletState extends State<wallet> {
+  APIService apiService = new APIService();
+  EthereumWallet userEthWallet = EthereumWallet();
+  BlackMarketRate blackMarketRate = BlackMarketRate();
+  bool loadData = true;
+
   @override
-  assetsWallet item;
+  void initState() {
+    super.initState();
+    fetchPageData();
+  }
+
+  void fetchPageData() async {
+    var responseFiatData = await apiService.get('fiat-rates/');
+    var responseUserWallet = await apiService.get('wallet/');
+
+    setState(() {
+      userEthWallet = EthereumWallet.fromJson(responseUserWallet['data'][0]);
+      blackMarketRate = BlackMarketRate.fromJson(responseFiatData['data'][0]);
+      loadData = false;
+    });
+  }
+
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     Size size = new Size(MediaQuery.of(context).size.width, 200.0);
-    return new Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: 225.0),
+    return loadData
+        ? Center(child: CircularProgressIndicator())
+        : new Scaffold(
+            body: Stack(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 225.0),
 
-            ///
-            /// Create card list
-            ///
-            child: Container(
-                child: ListView.builder(
-              shrinkWrap: true,
-              primary: false,
-              padding: EdgeInsets.only(top: 0.0),
-              itemBuilder: (ctx, i) {
-                return card(assetsWalletList[i], ctx);
-              },
-              itemCount: assetsWalletList.length,
-            )),
-          ),
-          Column(
-            children: <Widget>[
-              new Stack(
-                children: <Widget>[
                   ///
-                  /// Create wave header
+                  /// Create card list
                   ///
-                  new waveBody(
-                      size: size, xOffset: 0, yOffset: 0, color: Colors.red),
-                  new Opacity(
-                    opacity: 0.9,
-                    child: new waveBody(
-                      size: size,
-                      xOffset: 60,
-                      yOffset: 10,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 5.0,
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.only(left: 13.0, right: 13.0, top: 6.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Container(
+                      child: Column(
+                    children: [
+                      displayEthWallet(context, userEthWallet),
+                      displayEthWallet(context, userEthWallet),
+                      displayEthWallet(context, userEthWallet)
+                    ],
+                  )),
+                ),
+                Column(
                   children: <Widget>[
-                    Text(
-                      "Coin Type",
-                      style: TextStyle(
-                          color: Theme.of(context).hintColor,
-                          fontFamily: "Popins",
-                          fontSize: 14.0),
+                    new Stack(
+                      children: <Widget>[
+                        ///
+                        /// Create wave header
+                        ///
+                        new waveBody(
+                            size: size,
+                            xOffset: 0,
+                            yOffset: 0,
+                            color: Colors.red),
+                        new Opacity(
+                          opacity: 0.9,
+                          child: new waveBody(
+                            size: size,
+                            xOffset: 60,
+                            yOffset: 10,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      "Value (USDT)",
-                      style: TextStyle(
-                          color: Theme.of(context).hintColor,
-                          fontFamily: "Popins",
-                          fontSize: 14.0),
-                    )
+                    SizedBox(
+                      height: 5.0,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 13.0, right: 13.0, top: 6.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            "Coin Type",
+                            style: TextStyle(
+                                color: Theme.of(context).hintColor,
+                                fontFamily: "Popins",
+                                fontSize: 14.0),
+                          ),
+                          Text(
+                            "Value",
+                            style: TextStyle(
+                                color: Theme.of(context).hintColor,
+                                fontFamily: "Popins",
+                                fontSize: 14.0),
+                          )
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
+          );
+  }
+
+  displayEthWallet(BuildContext ctx, EthereumWallet userEthWallet) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 7.0),
+      child: Column(
+        children: <Widget>[
+          InkWell(
+            onTap: () {
+              Navigator.of(ctx).push(PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      new walletDetail(assetName: userEthWallet.shortName)));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Image.network(
+                          userEthWallet.icon.toString(),
+                          height: 25.0,
+                          fit: BoxFit.contain,
+                          width: 22.0,
+                        ),
+                      ),
+                      Container(
+                        width: 95.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              userEthWallet.name,
+                              style: TextStyle(
+                                  fontFamily: "Popins", fontSize: 16.5),
+                            ),
+                            Text(
+                              userEthWallet.frozen == true
+                                  ? "Froze: ${userEthWallet.amount}"
+                                  : "No Frozen Asset",
+                              style: TextStyle(
+                                  fontFamily: "Popins",
+                                  fontSize: 11.5,
+                                  color: Theme.of(ctx).hintColor),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "${userEthWallet.balance} Eth",
+                          style: TextStyle(
+                              fontFamily: "Popins",
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_right,
+                          size: 19.0,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 20.0, top: 6.0),
+            child: Container(
+              width: double.infinity,
+              height: 0.5,
+              decoration: BoxDecoration(
+                  color: Theme.of(ctx).hintColor.withOpacity(0.1)),
+            ),
+          )
         ],
       ),
     );
+  }
+
+  displayUserEth(balance) {
+    return double.parse(balance).toStringAsFixed(5);
   }
 }
 
@@ -212,7 +335,7 @@ class _waveBodyState extends State<waveBody> with TickerProviderStateMixin {
           alignment: Alignment.topCenter,
           child: Column(children: <Widget>[
             Text(
-              "Total Asseets (USDT)",
+              "Total Assets",
               style: TextStyle(fontFamily: "Popins", color: Colors.white),
             ),
             SizedBox(
@@ -255,96 +378,4 @@ class WaveClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(WaveClipper oldClipper) =>
       animation != oldClipper.animation;
-}
-
-Widget card(assetsWallet item, BuildContext ctx) {
-  return Padding(
-    padding: const EdgeInsets.only(top: 7.0),
-    child: Column(
-      children: <Widget>[
-        InkWell(
-          onTap: () {
-            Navigator.of(ctx).push(PageRouteBuilder(
-                pageBuilder: (_, __, ___) => new walletDetail()));
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(left: 12.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 5.0, right: 12.0),
-                      child: Image.asset(
-                        item.icon,
-                        height: 25.0,
-                        fit: BoxFit.contain,
-                        width: 22.0,
-                      ),
-                    ),
-                    Container(
-                      width: 95.0,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            item.name,
-                            style:
-                                TextStyle(fontFamily: "Popins", fontSize: 16.5),
-                          ),
-                          Text(
-                            item.pairValue,
-                            style: TextStyle(
-                                fontFamily: "Popins",
-                                fontSize: 11.5,
-                                color: Theme.of(ctx).hintColor),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 15.0),
-                child: Container(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        item.priceValue,
-                        style: TextStyle(
-                            fontFamily: "Popins",
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      Icon(
-                        Icons.keyboard_arrow_right,
-                        size: 19.0,
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 10.0, right: 20.0, top: 6.0),
-          child: Container(
-            width: double.infinity,
-            height: 0.5,
-            decoration:
-                BoxDecoration(color: Theme.of(ctx).hintColor.withOpacity(0.1)),
-          ),
-        )
-      ],
-    ),
-  );
 }

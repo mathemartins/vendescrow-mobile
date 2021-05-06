@@ -1,6 +1,6 @@
-# crypto_v2
+# VendEscrow
 
-A new Flutter project.
+World Cryptocurrency Exchange
 
 ## Getting Started
 

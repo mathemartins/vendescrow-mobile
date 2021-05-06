@@ -1,9 +1,8 @@
 import 'package:crypto_v2/screen/market/TabBarBody/btc.dart';
-import 'package:crypto_v2/screen/market/TabBarBody/eth.dart';
 import 'package:crypto_v2/screen/market/TabBarBody/favorite.dart';
-import 'package:crypto_v2/screen/market/TabBarBody/usdt.dart';
-import 'package:crypto_v2/screen/market/TabBarBody/xrp.dart';
 import 'package:flutter/material.dart';
+
+import 'TabBarBody/eth.dart';
 
 class market extends StatefulWidget {
   final Widget child;
@@ -18,7 +17,7 @@ class _marketState extends State<market> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    _tabController = new TabController(length: 5, vsync: this, initialIndex: 1);
+    _tabController = new TabController(length: 3, vsync: this, initialIndex: 1);
     super.initState();
   }
 
@@ -61,25 +60,13 @@ class _marketState extends State<market> with SingleTickerProviderStateMixin {
             ),
             new Tab(
               child: Text(
-                "BTC",
+                "Crypto",
                 style: TextStyle(fontFamily: "Popins"),
               ),
             ),
             new Tab(
               child: Text(
-                "USDT",
-                style: TextStyle(fontFamily: "Popins"),
-              ),
-            ),
-            new Tab(
-              child: Text(
-                "XRP",
-                style: TextStyle(fontFamily: "Popins"),
-              ),
-            ),
-            new Tab(
-              child: Text(
-                "ETH",
+                "Fiat",
                 style: TextStyle(fontFamily: "Popins"),
               ),
             ),
@@ -87,7 +74,7 @@ class _marketState extends State<market> with SingleTickerProviderStateMixin {
         ),
       ),
       body: TabBarView(
-        children: <Widget>[favorite(), btc(), usdt(), xrp(), eth()],
+        children: <Widget>[favorite(), btc(), eth()],
         controller: _tabController,
       ),
     );

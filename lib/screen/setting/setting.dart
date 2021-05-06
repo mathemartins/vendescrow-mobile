@@ -1,7 +1,7 @@
-import 'package:crypto_v2/screen/setting/SeeAllTemplate.dart';
+import 'package:crypto_v2/component/style.dart';
+import 'package:crypto_v2/screen/market/markets.dart';
 import 'package:crypto_v2/screen/setting/themes.dart';
 import 'package:flutter/material.dart';
-import 'package:crypto_v2/component/style.dart';
 
 class setting extends StatefulWidget {
   ///
@@ -99,7 +99,7 @@ class _settingState extends State<setting> {
             InkWell(
                 onTap: () {
                   Navigator.of(context).push(PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => new seeAllTemplate()));
+                      pageBuilder: (_, __, ___) => new market()));
                 },
                 child: listSetting("UI KIT WALLET", "See all template")),
           ],

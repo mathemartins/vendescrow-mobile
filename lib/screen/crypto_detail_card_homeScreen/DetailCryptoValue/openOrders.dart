@@ -1,16 +1,52 @@
+import 'package:crypto_v2/API/apiService.dart';
 import 'package:crypto_v2/component/CardDetail/AmountSell.dart';
 import 'package:crypto_v2/component/CardDetail/BuyAmount.dart';
+import 'package:crypto_v2/component/User/UserModel.dart';
+import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
+import 'package:crypto_v2/component/market/cryptoDetail.dart';
+import 'package:crypto_v2/component/market/cryptoValueDetail.dart';
 import 'package:flutter/material.dart';
 
 class openOrders extends StatefulWidget {
   final Widget child;
+  final String symbol;
 
-  openOrders({Key key, this.child}) : super(key: key);
+  openOrders({Key key, this.child, this.symbol}) : super(key: key);
 
-  _openOrdersState createState() => _openOrdersState();
+  _openOrdersState createState() => _openOrdersState(this.symbol);
 }
 
 class _openOrdersState extends State<openOrders> {
+  String symbol;
+  _openOrdersState(String symbol);
+  APIService apiService = new APIService();
+  User user = new User();
+  CryptoDetail cryptoDetail = new CryptoDetail();
+  CryptoValueDetail cryptoValueDetail = new CryptoValueDetail();
+  BlackMarketRate _blackMarketRate = new BlackMarketRate();
+  bool loadData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPageContent(symbol);
+  }
+
+  void fetchPageContent(String asset) async {
+    var responseFiatData = await apiService.get('fiat-rates/');
+    var responseCryptoDetail = await apiService.getCryptoDetail(asset);
+    var responseCryptoValueDetail =
+        await apiService.getCryptoValueDetail(asset);
+    setState(() {
+      _blackMarketRate = BlackMarketRate.fromJson(responseFiatData['data'][0]);
+      cryptoDetail =
+          CryptoDetail.fromJson(responseCryptoDetail['data']['$asset']);
+      cryptoValueDetail = CryptoValueDetail.fromJson(
+          responseCryptoValueDetail['data']['$asset']);
+      loadData = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double mediaQuery = MediaQuery.of(context).size.width / 2.2;
@@ -21,38 +57,11 @@ class _openOrdersState extends State<openOrders> {
         Container(
           color: Theme.of(context).canvasColor,
           child: Padding(
-            padding: const EdgeInsets.only(
-                left: 0.0, right: 0.0, top: 7.0, bottom: 7.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 12.0),
-                  child: Text(
-                    "Buy Amount",
-                    style: TextStyle(
-                        color: Theme.of(context).hintColor,
-                        fontFamily: "Popins"),
-                  ),
-                ),
-                Text(
-                  "Price",
-                  style: TextStyle(
-                      color: Theme.of(context).hintColor, fontFamily: "Popins"),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 10.0),
-                  child: Text(
-                    "Amount Sell",
-                    style: TextStyle(
-                        color: Theme.of(context).hintColor,
-                        fontFamily: "Popins"),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              padding: const EdgeInsets.only(
+                  left: 0.0, right: 0.0, top: 7.0, bottom: 7.0),
+              child: Container(
+                child: Text("${cryptoDetail.description}"),
+              )),
         ),
         SizedBox(
           height: 10.0,

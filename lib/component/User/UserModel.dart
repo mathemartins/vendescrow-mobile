@@ -52,6 +52,11 @@ class User {
     message = json['message'];
   }
 
+  User.fromJSON(Map<String, dynamic> json) {
+    token = json['token'];
+    message = json['message'];
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['username'] = this.username.trim();
@@ -62,5 +67,12 @@ class User {
     data['password'] = this.password.trim();
     data['password2'] = this.password2.trim();
     return data;
+  }
+
+  Map toMap() {
+    var map = new Map<String, dynamic>();
+    map["username"] = username;
+    map["password"] = password;
+    return map;
   }
 }

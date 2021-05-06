@@ -1,8 +1,8 @@
-import 'package:crypto_v2/component/News/newsHeaderModel.dart';
+import 'package:crypto_v2/component/News/NewsModel.dart';
 import 'package:flutter/material.dart';
 
 class headerSliderDetail extends StatefulWidget {
-  newsHeader item;
+  News item;
 
   headerSliderDetail({Key key, this.item}) : super(key: key);
 
@@ -10,7 +10,7 @@ class headerSliderDetail extends StatefulWidget {
 }
 
 class _headerSliderDetailState extends State<headerSliderDetail> {
-  newsHeader item;
+  News item;
   _headerSliderDetailState(this.item);
 
   @override
@@ -19,12 +19,12 @@ class _headerSliderDetailState extends State<headerSliderDetail> {
 
     /// Hero animation for image
     final hero = Hero(
-      tag: 'hero-tag-${item.id}',
+      tag: 'hero-tag-${item.url}',
       child: new DecoratedBox(
         decoration: new BoxDecoration(
           image: new DecorationImage(
             fit: BoxFit.cover,
-            image: new AssetImage(item.imageUrl),
+            image: new NetworkImage(item.image),
           ),
           shape: BoxShape.rectangle,
         ),
@@ -54,10 +54,10 @@ class _headerSliderDetailState extends State<headerSliderDetail> {
             SliverPersistentHeader(
               delegate: MySliverAppBar(
                   expandedHeight: _height - 30.0,
-                  img: item.imageUrl,
-                  id: item.id,
+                  img: item.image,
+                  id: item.url,
                   title: item.title,
-                  category: item.category),
+                  category: "Blockchain"),
               pinned: true,
             ),
 
@@ -115,35 +115,9 @@ class _headerSliderDetailState extends State<headerSliderDetail> {
                 padding: const EdgeInsets.only(
                     top: 40.0, left: 20.0, right: 20.0, bottom: 20.0),
                 child: Text(
-                  item.desc1,
+                  item.content,
                   style: TextStyle(
-                      fontFamily: "Popins",
-                      color: Theme.of(context).textSelectionColor,
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w400),
-                  textAlign: TextAlign.justify,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 20.0, left: 20.0, right: 20.0, bottom: 20.0),
-                child: Text(
-                  item.desc2,
-                  style: TextStyle(
-                      fontFamily: "Popins",
-                      color: Theme.of(context).textSelectionColor,
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w400),
-                  textAlign: TextAlign.justify,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 20.0, left: 20.0, right: 20.0, bottom: 20.0),
-                child: Text(
-                  item.desc3,
-                  style: TextStyle(
-                      fontFamily: "Popins",
+                      fontFamily: "avenir",
                       color: Theme.of(context).textSelectionColor,
                       fontSize: 15.0,
                       fontWeight: FontWeight.w400),
@@ -194,7 +168,7 @@ class MySliverAppBar extends SliverPersistentHeaderDelegate {
               decoration: new BoxDecoration(
                 image: new DecorationImage(
                   fit: BoxFit.cover,
-                  image: new AssetImage(img),
+                  image: new NetworkImage(img),
                 ),
                 shape: BoxShape.rectangle,
               ),
@@ -261,7 +235,7 @@ class MySliverAppBar extends SliverPersistentHeaderDelegate {
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 22.5,
-                          fontFamily: "Popins",
+                          fontFamily: "avenir",
                           fontWeight: FontWeight.w700),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -276,7 +250,7 @@ class MySliverAppBar extends SliverPersistentHeaderDelegate {
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16.5,
-                          fontFamily: "Popins",
+                          fontFamily: "avenir",
                           fontWeight: FontWeight.w400),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -307,7 +281,7 @@ class MySliverAppBar extends SliverPersistentHeaderDelegate {
                 "News",
                 style: TextStyle(
                   color: Colors.white,
-                  fontFamily: "Gotik",
+                  fontFamily: "avenir",
                   fontWeight: FontWeight.w700,
                   fontSize: (expandedHeight / 40) - (shrinkOffset / 40) + 18,
                 ),

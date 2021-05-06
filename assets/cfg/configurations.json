@@ -1,4 +1,10 @@
 {
   "base_url": "https://vendescrow.herokuapp.com/",
-  "api_base_url": "https://vendescrow.herokuapp.com/api/"
+  "api_base_url": "https://cb2e4965f63b.ngrok.io/api/",
+  "coin_market_cap_api_url": "https://pro-api.coinmarketcap.com/",
+  "coin_market_cap_api_key": "b9bce1cc-01ad-44d0-bc4e-e1421245ec0f",
+  "ethereum_gas_station_url": "https://ethgasstation.info/api/ethgasAPI.json",
+  "ethereum_gas_station_api_key": "056800238bee56d03c79cee8f56543807341924a39e4370805475bfd96e7",
+  "nomics_api_base_url": "https://api.nomics.com/",
+  "nomics_api_key": "4ba305a0a9c69b9129e4e235103d0cd0"
 }

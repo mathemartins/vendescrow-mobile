@@ -1,111 +1,127 @@
-import 'dart:async';
-
-import 'package:carousel_pro/carousel_pro.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/Common/Common.dart';
+import 'package:crypto_v2/Helpers/CurrencySymbol.dart';
+import 'package:crypto_v2/Helpers/HumanReadableNumbers.dart';
+import 'package:crypto_v2/component/News/NewsModel.dart';
+import 'package:crypto_v2/component/User/UserModel.dart';
+import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
+import 'package:crypto_v2/component/market/LiveCrypto.dart';
 import 'package:crypto_v2/component/modelGridHome.dart';
 import 'package:crypto_v2/component/style.dart';
 import 'package:crypto_v2/screen/crypto_detail_card_homeScreen/DetailCryptoValue/cardDetailHome.dart';
-import 'package:crypto_v2/screen/home/Gainer.dart';
 import 'package:crypto_v2/screen/home/Loser.dart';
+import 'package:crypto_v2/screen/news/news_list_detail/news_list_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sparkline/flutter_sparkline.dart';
 import 'package:shimmer/shimmer.dart';
+
+import 'LiveCryptoAsset.dart';
 
 class home extends StatefulWidget {
   _homeState createState() => _homeState();
 }
 
 class _homeState extends State<home> {
-  ///
-  /// Get image data dummy from firebase server
-  ///
-  var imageNetwork = NetworkImage(
-      "https://firebasestorage.googleapis.com/v0/b/beauty-look.appspot.com/o/Screenshot_20181005-213938.png?alt=media&token=8c1abb09-4acf-45cf-9383-2f94d93f4ec9");
-
-  ///
-  /// check the condition is right or wrong for image loaded or no
-  ///
+  List<LiveCrypto> _liveCrypto = List<LiveCrypto>();
+  List<News> _news = List<News>();
+  APIService apiService = new APIService();
+  BlackMarketRate _blackMarketRate = BlackMarketRate();
+  News news = new News();
+  User user = new User();
   bool loadCard = true;
 
   @override
   @override
   void initState() {
-    Timer(Duration(seconds: 3), () {
+    super.initState();
+    apiService.getLiveCryptoData().then((value) {
       setState(() {
+        _liveCrypto.addAll(value);
+        apiService.getCurrentUser().then((value) => user = value);
+      });
+    });
+
+    fetchPageContent();
+  }
+
+  void fetchPageContent() async {
+    var responseFiatData = await apiService.get('fiat-rates/');
+    apiService.getNewsData().then((value) {
+      setState(() {
+        _news.addAll(value);
+        _blackMarketRate =
+            BlackMarketRate.fromJson(responseFiatData['data'][0]);
         loadCard = false;
       });
     });
-    // TODO: implement initState
-    super.initState();
   }
 
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            ///
             /// Header image slider
-            ///
             SizedBox(
-                height: 210.0,
-                width: double.infinity,
-                child: new Carousel(
-                  boxFit: BoxFit.cover,
-                  dotColor: Colors.white.withOpacity(0.8),
-                  dotSize: 5.5,
-                  dotSpacing: 16.0,
-                  dotBgColor: Colors.transparent,
-                  showIndicator: true,
-                  overlayShadow: true,
-                  overlayShadowColors: Theme.of(context)
-                      .scaffoldBackgroundColor
-                      .withOpacity(0.9),
-                  overlayShadowSize: 0.25,
-
-                  // images: List<String>.generate(4, (String imageUrl) => Image.network(imageUrl.characters.toString())),
-
-                  images: [
-                    AssetImage("assets/image/banner/banner2.png"),
-                    AssetImage("assets/image/banner/banner3.jpg"),
-                    AssetImage("assets/image/banner/banner2.png"),
-                    AssetImage("assets/image/banner/banner3.jpg"),
-                  ],
-                )),
-            SizedBox(height: 10.0),
-
-            ///
-            /// Action buttons for system actions
-            ///
-
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 4,
-                childAspectRatio: 0.7,
-                children: [
-                  serviceWidget("sendMoney", "Repay\nMy Loan", "repayLoan"),
-                  serviceWidget(
-                      "receiveMoney", "LockFunds\nWallet", "/lockfundsPage"),
-                  serviceWidget("phone", "Account \nDetails",
-                      "/lockfunds-account-details"),
-                  serviceWidget("more", "More\n", "snackbar"),
-                ],
+              height: 210.0,
+              width: double.infinity,
+              child: CarouselSlider(
+                options: CarouselOptions(
+                  height: 400.0,
+                  enableInfiniteScroll: true,
+                  aspectRatio: 16 / 9,
+                  reverse: false,
+                  autoPlay: true,
+                  autoPlayInterval: Duration(seconds: 3),
+                  autoPlayAnimationDuration: Duration(milliseconds: 800),
+                  autoPlayCurve: Curves.fastOutSlowIn,
+                  viewportFraction: 1.1,
+                ),
+                items: List<String>.generate(
+                        _news.length, (index) => _news[index].image.toString())
+                    .map((i) {
+                  return Builder(
+                    builder: (BuildContext context) {
+                      return Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: EdgeInsets.symmetric(horizontal: 5.0),
+                        decoration: BoxDecoration(color: Colors.amber),
+                        child: GestureDetector(
+                          child: Image.network(i, fit: BoxFit.cover),
+                          onTap: () {
+                            print(i);
+                            Navigator.push<Widget>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    newsListDetail(imageUrl: i.toString()),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
               ),
             ),
+            SizedBox(height: 10.0),
+
+            /// Action buttons for system actions
+            _displayActionButtons(context),
 
             SizedBox(height: 10.0),
 
-            ///
-            ///
             /// check the condition if image data from server firebase loaded or no
             /// if image loaded true (image still downloading from server)
             /// Card to set card loading animation
-            ///
 
-            loadCard ? _loadingCardAnimation(context) : _cardLoaded(context),
+            loadCard
+                ? _loadingCardAnimation(context)
+                : _cardLoaded(context, _liveCrypto, _blackMarketRate),
 
-            ///
             /// Tab bar custom
-            ///
             Container(
               height: 700.0,
               child: Column(
@@ -151,7 +167,7 @@ class _homeState extends State<home> {
                                               padding: const EdgeInsets.only(
                                                   left: 8.0),
                                               child: Text(
-                                                "Gainers",
+                                                "Live Tracker",
                                                 style: TextStyle(
                                                     fontFamily: "Sans"),
                                               ),
@@ -166,15 +182,16 @@ class _homeState extends State<home> {
                                               padding: const EdgeInsets.only(
                                                   left: 8.0),
                                               child: Icon(
-                                                IconData(0xe901,
-                                                    fontFamily: 'loser'),
-                                                size: 15.0,
+                                                IconData(61316,
+                                                    fontFamily:
+                                                        'MaterialIcons'),
+                                                size: 20.0,
                                               ),
                                             ),
                                             Padding(
                                               padding: const EdgeInsets.only(
                                                   left: 8.0),
-                                              child: Text("Loser"),
+                                              child: Text("Send Fiat"),
                                             )
                                           ],
                                         ),
@@ -191,7 +208,7 @@ class _homeState extends State<home> {
                           padding: const EdgeInsets.only(top: 10.0),
                           child: new TabBarView(
                             children: [
-                              gainer(),
+                              LiveCryptoAsset(),
                               loser(),
                             ],
                           ),
@@ -252,7 +269,7 @@ class _homeState extends State<home> {
                 margin: EdgeInsets.all(25),
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                        image: AssetImage('asset/images/$img.png'))),
+                        image: AssetImage('assets/image/$img.png'))),
               ),
             ),
           ),
@@ -277,11 +294,30 @@ class _homeState extends State<home> {
       content: Text(value),
     ));
   }
+
+  Widget _displayActionButtons(BuildContext context) {
+    return GridView.count(
+      shrinkWrap: true,
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+      crossAxisSpacing: 4,
+      childAspectRatio: 0.7,
+      crossAxisCount: 4,
+      primary: false,
+      children: [
+        serviceWidget("sendMoney", "Trade P2P", "repayLoan"),
+        serviceWidget("receiveMoney", "Wallet", "/lockfundsPage"),
+        serviceWidget("phone", "Referrals", "/lockfunds-account-details"),
+        serviceWidget("more", "VendToken", "snackbar"),
+      ],
+    );
+  }
 }
 
 class card extends StatelessWidget {
-  gridHome item;
-  card(this.item);
+  LiveCrypto item;
+  BlackMarketRate blackMarketRate;
+
+  card(this.item, this.blackMarketRate);
   @override
   Widget build(BuildContext context) {
     double _width = MediaQuery.of(context).size.width;
@@ -291,7 +327,7 @@ class card extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(PageRouteBuilder(
               pageBuilder: (_, __, ___) => new cardDetailHome(
-                    item: item,
+                  //item: item,
                   )));
         },
         child: Container(
@@ -330,15 +366,19 @@ class card extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            item.valueMarket,
+                            "${getUserCurrency(blackMarketRate.country.toString())} ${k_m_b_generator(item.quote.uSD.price, blackMarketRate.dollarRate)}",
+                            //item.quote.uSD.price.toString(),
                             style: TextStyle(
-                                color: item.chartColor,
+                                color: Colors.white,
                                 fontFamily: "Gotik",
                                 fontSize: 13.5),
                           ),
                           Text(
-                            item.valuePercent,
-                            style: TextStyle(color: item.chartColor),
+                            "${item.quote.uSD.percentChange1h.toStringAsFixed(2)}%",
+                            style: TextStyle(
+                                color: item.quote.uSD.percentChange1h < 0
+                                    ? Colors.redAccent
+                                    : Colors.greenAccent),
                           ),
                         ],
                       ),
@@ -351,14 +391,19 @@ class card extends StatelessWidget {
                 child: Container(
                   height: 30.0,
                   child: new Sparkline(
-                    data: item.data,
+                    data: generateRandomDecimals(),
                     lineWidth: 0.3,
                     fillMode: FillMode.below,
-                    lineColor: item.chartColor,
+                    lineColor: item.quote.uSD.percentChange24h < 0
+                        ? Colors.redAccent
+                        : Colors.greenAccent,
                     fillGradient: new LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: item.chartColorGradient,
+                      colors: [
+                        Colors.greenAccent.withOpacity(0.2),
+                        Colors.greenAccent.withOpacity(0.01)
+                      ],
                     ),
                   ),
                 ),
@@ -454,11 +499,7 @@ class cardLoading extends StatelessWidget {
   }
 }
 
-///
-///
 /// Calling imageLoading animation for set a grid layout
-///
-///
 Widget _loadingCardAnimation(BuildContext context) {
   return GridView.count(
       shrinkWrap: true,
@@ -474,22 +515,17 @@ Widget _loadingCardAnimation(BuildContext context) {
       ));
 }
 
-///
-///
 /// Calling ImageLoaded animation for set a grid layout
-///
-///
-Widget _cardLoaded(BuildContext context) {
+Widget _cardLoaded(BuildContext context, liveCryptoData, blackMarketRate) {
   return GridView.count(
-      shrinkWrap: true,
-      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-      crossAxisSpacing: 12.0,
-      mainAxisSpacing: 12.0,
-      childAspectRatio: 1.745,
-      crossAxisCount: 2,
-      primary: false,
-      children: List.generate(
-        listGridHome.length,
-        (index) => card(listGridHome[index]),
-      ));
+    shrinkWrap: true,
+    padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+    crossAxisSpacing: 12.0,
+    mainAxisSpacing: 12.0,
+    childAspectRatio: 1.745,
+    crossAxisCount: 2,
+    primary: false,
+    children: List.generate(
+        2, (index) => card(liveCryptoData[index], blackMarketRate)),
+  );
 }

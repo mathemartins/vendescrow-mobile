@@ -1,12 +1,13 @@
-import 'dart:async';
-
+import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/component/News/NewsModel.dart';
 import 'package:crypto_v2/component/News/newsHeaderModel.dart';
 import 'package:crypto_v2/component/News/newsListBottom.dart';
 import 'package:crypto_v2/screen/news/news_header_slider/intro_page_item.dart';
 import 'package:crypto_v2/screen/news/news_header_slider/page_transformer.dart';
-import 'package:crypto_v2/screen/news/news_list_detail/news_list_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+
+import 'news_list_detail/news_list_detail.dart';
 
 class news extends StatefulWidget {
   final Widget child;
@@ -17,26 +18,20 @@ class news extends StatefulWidget {
 }
 
 class _newsState extends State<news> {
-  ///
-  /// Get image data dummy from firebase server
-  ///
-  var imageNetwork = NetworkImage(
-      "https://firebasestorage.googleapis.com/v0/b/beauty-look.appspot.com/o/Artboard%203.png?alt=media&token=dc7f4bf5-8f80-4f38-bb63-87aed9d59b95");
-
-  ///
-  /// check the condition is right or wrong for image loaded or no
-  ///
-  bool loadImage = true;
+  List<News> _news = List<News>();
+  APIService apiService = new APIService();
+  News news = new News();
+  bool loadData = true;
 
   @override
   void initState() {
-    Timer(Duration(seconds: 3), () {
+    super.initState();
+    apiService.getNewsData().then((value) {
       setState(() {
-        loadImage = false;
+        _news.addAll(value);
+        loadData = false;
       });
     });
-    // TODO: implement initState
-    super.initState();
   }
 
   Widget build(BuildContext context) {
@@ -62,32 +57,31 @@ class _newsState extends State<news> {
                 Padding(
                   padding: EdgeInsets.only(top: 70.0, left: 20.0),
                   child: Text(
-                    "Today",
+                    "Explore",
                     style: TextStyle(
-                        fontFamily: "Sans",
+                        fontFamily: "avenir",
                         fontWeight: FontWeight.w800,
-                        fontSize: 30.0,
-                        letterSpacing: 1.5,
+                        fontSize: 25.0,
                         color: Colors.white),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 30.0),
-                  child: loadImage
+                  child: loadData
                       ? _loadingDataHeader(context)
-                      : _dataLoadedHeader(context),
+                      : _dataLoadedHeader(context, _news),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 40.0, left: 30.0),
-                  child: Text("Crypto Popular News",
+                  child: Text("Blockchain The Future",
                       style: TextStyle(
-                          fontFamily: "Popins",
-                          fontSize: 16.0,
+                          fontFamily: "avenir",
+                          fontSize: 14.0,
                           fontWeight: FontWeight.w700)),
                 ),
-                loadImage
+                loadData
                     ? _loadingDataList(context)
-                    : _dataLoadedList(context),
+                    : _dataLoadedList(context, _news),
                 SizedBox(
                   height: 10.0,
                 )
@@ -100,11 +94,7 @@ class _newsState extends State<news> {
   }
 }
 
-///
-///
 /// Calling imageLoading animation for set a grid layout
-///
-///
 Widget _loadingDataHeader(BuildContext context) {
   return SizedBox.fromSize(
     size: const Size.fromHeight(500.0),
@@ -112,7 +102,7 @@ Widget _loadingDataHeader(BuildContext context) {
       pageViewBuilder: (context, visibilityResolver) {
         return PageView.builder(
           controller: PageController(viewportFraction: 0.87),
-          itemCount: sampleItems.length,
+          itemCount: 2,
           itemBuilder: (context, index) {
             final item = sampleItems[index];
             final pageVisibility =
@@ -187,21 +177,17 @@ Widget cardHeaderLoading(BuildContext context) {
   );
 }
 
-///
-///
 /// Calling ImageLoaded animation for set a grid layout
-///
-///
-Widget _dataLoadedHeader(BuildContext context) {
+Widget _dataLoadedHeader(BuildContext context, List<News> news) {
   return SizedBox.fromSize(
     size: const Size.fromHeight(500.0),
     child: PageTransformer(
       pageViewBuilder: (context, visibilityResolver) {
         return PageView.builder(
           controller: PageController(viewportFraction: 0.87),
-          itemCount: sampleItems.length,
+          itemCount: news.length,
           itemBuilder: (context, index) {
-            final item = sampleItems[index];
+            final item = news[index];
             final pageVisibility =
                 visibilityResolver.resolvePageVisibility(index);
             return IntroPageItem(
@@ -215,11 +201,7 @@ Widget _dataLoadedHeader(BuildContext context) {
   );
 }
 
-///
-///
 /// Calling imageLoading animation for set a list layout
-///
-///
 Widget _loadingDataList(BuildContext context) {
   return Container(
     child: ListView.builder(
@@ -311,26 +293,23 @@ Widget loadingCard(BuildContext ctx, newsListBottom item) {
   );
 }
 
-///
-///
 /// Calling ImageLoaded animation for set a grid layout
-///
-///
-Widget _dataLoadedList(BuildContext context) {
+
+Widget _dataLoadedList(BuildContext context, List<News> news) {
   return Container(
     child: ListView.builder(
       shrinkWrap: true,
       primary: false,
       padding: EdgeInsets.only(top: 0.0),
-      itemCount: newsList.length,
+      itemCount: news.length,
       itemBuilder: (ctx, i) {
-        return card(newsList[i], ctx);
+        return card(news[i], ctx);
       },
     ),
   );
 }
 
-Widget card(newsListBottom item, BuildContext context) {
+Widget card(News item, BuildContext context) {
   return Padding(
     padding: const EdgeInsets.only(left: 25.0, top: 20.0, bottom: 0.0),
     child: InkWell(
@@ -338,7 +317,7 @@ Widget card(newsListBottom item, BuildContext context) {
         Navigator.of(context).push(
           PageRouteBuilder(
               pageBuilder: (_, __, ___) => new newsListDetail(
-                    item: item,
+                    imageUrl: item.image,
                   ),
               transitionDuration: Duration(milliseconds: 600),
               transitionsBuilder:
@@ -355,7 +334,7 @@ Widget card(newsListBottom item, BuildContext context) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Hero(
-            tag: 'hero-tag-list-${item.id}',
+            tag: 'hero-tag-list-${item.url}',
             child: Material(
               child: Container(
                 height: 95.0,
@@ -363,8 +342,8 @@ Widget card(newsListBottom item, BuildContext context) {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(5.0)),
                   image: DecorationImage(
-                      image: AssetImage(
-                        item.img,
+                      image: NetworkImage(
+                        item.image,
                       ),
                       fit: BoxFit.cover),
                 ),
@@ -380,9 +359,9 @@ Widget card(newsListBottom item, BuildContext context) {
                 Padding(
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Text(
-                    item.author,
+                    "VendEscrow",
                     style: TextStyle(
-                        fontFamily: "Gotik",
+                        fontFamily: "avenir",
                         fontWeight: FontWeight.w700,
                         color: Theme.of(context)
                             .textSelectionColor
@@ -413,7 +392,7 @@ Widget card(newsListBottom item, BuildContext context) {
                       Padding(
                         padding: const EdgeInsets.only(left: 5.0),
                         child: Text(
-                          item.time,
+                          item.publish,
                           style: TextStyle(
                               color: Theme.of(context).hintColor,
                               fontFamily: "Gotik"),

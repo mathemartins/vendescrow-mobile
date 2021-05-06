@@ -1,3 +1,4 @@
+import 'package:crypto_v2/component/style.dart';
 import 'package:crypto_v2/screen/Bottom_Nav_Bar/custom_nav_bar.dart';
 import 'package:crypto_v2/screen/home/home.dart';
 import 'package:crypto_v2/screen/market/markets.dart';
@@ -6,7 +7,6 @@ import 'package:crypto_v2/screen/setting/setting.dart';
 import 'package:crypto_v2/screen/setting/themes.dart';
 import 'package:crypto_v2/screen/wallet/wallet.dart';
 import 'package:flutter/material.dart';
-import 'package:crypto_v2/component/style.dart';
 
 class bottomNavBar extends StatefulWidget {
   ///

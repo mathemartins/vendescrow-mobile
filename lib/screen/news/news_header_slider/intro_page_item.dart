@@ -1,9 +1,9 @@
-import 'package:crypto_v2/component/News/newsHeaderModel.dart';
-import 'package:crypto_v2/screen/news/news_header_slider/news_header_slider_detail.dart';
+import 'package:crypto_v2/component/News/NewsModel.dart';
 import 'package:crypto_v2/screen/news/news_header_slider/page_transformer.dart';
-
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+
+import 'news_header_slider_detail.dart';
 
 class IntroPageItem extends StatelessWidget {
   IntroPageItem({
@@ -11,7 +11,7 @@ class IntroPageItem extends StatelessWidget {
     @required this.pageVisibility,
   });
 
-  final newsHeader item;
+  final News item;
   final PageVisibility pageVisibility;
 
   Widget _applyTextEffects({
@@ -39,7 +39,7 @@ class IntroPageItem extends StatelessWidget {
     var categoryText = _applyTextEffects(
       translationFactor: 300.0,
       child: Text(
-        item.category,
+        "Blockchain",
         style: textTheme.caption.copyWith(
           color: Colors.white70,
           fontWeight: FontWeight.bold,
@@ -80,7 +80,7 @@ class IntroPageItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var image = Image.asset(
-      item.imageUrl,
+      item.image,
       fit: BoxFit.cover,
       alignment: FractionalOffset(
         0.5 + (pageVisibility.pagePosition / 3),
@@ -104,13 +104,13 @@ class IntroPageItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 15.0),
       child: Hero(
-        tag: 'hero-tag-${item.id}',
+        tag: 'hero-tag-${item.url}',
         child: Material(
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10.0)),
               image: DecorationImage(
-                image: AssetImage(item.imageUrl),
+                image: NetworkImage(item.image),
                 fit: BoxFit.cover,
                 alignment: FractionalOffset(
                   0.5 + (pageVisibility.pagePosition / 3),

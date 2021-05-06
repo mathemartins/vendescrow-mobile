@@ -1,7 +1,9 @@
-import 'dart:async';
-
+import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/Helpers/CurrencySymbol.dart';
+import 'package:crypto_v2/component/User/UserModel.dart';
+import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
+import 'package:crypto_v2/component/market/FiatListModel.dart';
 import 'package:crypto_v2/component/market/ethModel.dart';
-import 'package:crypto_v2/screen/market/detailCrypto/ethDetail.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -14,28 +16,33 @@ class eth extends StatefulWidget {
 }
 
 class _ethState extends State<eth> {
-  ///
-  /// Get image data dummy from firebase server
-  ///
-  var imageNetwork = NetworkImage(
-      "https://firebasestorage.googleapis.com/v0/b/beauty-look.appspot.com/o/Artboard%203.png?alt=media&token=dc7f4bf5-8f80-4f38-bb63-87aed9d59b95");
+  List<FiatListModel> listFiat = List<FiatListModel>();
+  APIService apiService = new APIService();
+  User user = User();
+  BlackMarketRate blackMarketRate = BlackMarketRate();
+  bool loadData = true;
 
-  ///
-  /// check the condition is right or wrong for image loaded or no
-  ///
-  bool loadImage = true;
-
-  @override
   @override
   void initState() {
-    Timer(Duration(seconds: 3), () {
+    super.initState();
+    apiService.getLiveFiatData().then((value) {
       setState(() {
-        loadImage = false;
+        listFiat.addAll(value);
       });
     });
 
-    // TODO: implement initState
-    super.initState();
+    fetchPageData();
+  }
+
+  void fetchPageData() async {
+    var responseFiatData = await apiService.get('fiat-rates/');
+    var responseCurrentUser = await apiService.getCurrentUser();
+
+    setState(() {
+      user = responseCurrentUser;
+      blackMarketRate = BlackMarketRate.fromJson(responseFiatData['data'][0]);
+      loadData = false;
+    });
   }
 
   Widget build(BuildContext context) {
@@ -54,7 +61,7 @@ class _ethState extends State<eth> {
                 child: Container(
                     width: 100.0,
                     child: Text(
-                      "Pair",
+                      "Currency",
                       style: TextStyle(
                           color: Theme.of(context).hintColor,
                           fontFamily: "Popins"),
@@ -63,7 +70,7 @@ class _ethState extends State<eth> {
               Container(
                   width: 100.0,
                   child: Text(
-                    "Last Price",
+                    "Rate",
                     style: TextStyle(
                         color: Theme.of(context).hintColor,
                         fontFamily: "Popins"),
@@ -71,7 +78,7 @@ class _ethState extends State<eth> {
               Container(
                   width: 80.0,
                   child: Text(
-                    "24h Chg%",
+                    "Symbol",
                     style: TextStyle(
                         color: Theme.of(context).hintColor,
                         fontFamily: "Popins"),
@@ -90,7 +97,9 @@ class _ethState extends State<eth> {
         /// Card to set card loading animation
         ///
 
-        loadImage ? _loadingData(context) : _dataLoaded(context),
+        loadData
+            ? _loadingData(context)
+            : _dataLoaded(context, listFiat, user, blackMarketRate),
       ],
     ));
   }
@@ -119,14 +128,15 @@ Widget _loadingData(BuildContext context) {
 /// Calling ImageLoaded animation for set a grid layout
 ///
 ///
-Widget _dataLoaded(BuildContext context) {
+Widget _dataLoaded(
+    BuildContext context, List<FiatListModel> listFiat, user, blackmarketRate) {
   return Container(
     child: ListView.builder(
       shrinkWrap: true,
       primary: false,
-      itemCount: ethMarketList.length,
+      itemCount: listFiat.length,
       itemBuilder: (ctx, i) {
-        return card(ctx, ethMarketList[i]);
+        return card(ctx, listFiat[i], user, blackmarketRate);
       },
     ),
   );
@@ -245,15 +255,16 @@ Widget loadingCard(BuildContext ctx, ethMarket item) {
   );
 }
 
-Widget card(BuildContext ctx, ethMarket item) {
+Widget card(BuildContext ctx, FiatListModel item, User user,
+    BlackMarketRate blackMarketRate) {
   return Padding(
     padding: const EdgeInsets.only(top: 7.0),
     child: Column(
       children: <Widget>[
         InkWell(
           onTap: () {
-            Navigator.of(ctx).push(PageRouteBuilder(
-                pageBuilder: (_, __, ___) => new ethDetail(item: item)));
+            // Navigator.of(ctx).push(PageRouteBuilder(
+            //     pageBuilder: (_, __, ___) => new ethDetail(item: item)));
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -266,14 +277,8 @@ Widget card(BuildContext ctx, ethMarket item) {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.only(left: 5.0, right: 12.0),
-                      child: Image.asset(
-                        item.icon,
-                        height: 22.0,
-                        fit: BoxFit.contain,
-                        width: 22.0,
-                      ),
-                    ),
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Text("")),
                     Container(
                       width: 95.0,
                       child: Column(
@@ -283,21 +288,14 @@ Widget card(BuildContext ctx, ethMarket item) {
                           Row(
                             children: <Widget>[
                               Text(
-                                item.name,
+                                displayUserCurrencyName(item.country),
                                 style: TextStyle(
                                     fontFamily: "Popins", fontSize: 16.5),
-                              ),
-                              Text(
-                                "/BTC",
-                                style: TextStyle(
-                                    fontFamily: "Popins",
-                                    fontSize: 11.5,
-                                    color: Theme.of(ctx).hintColor),
                               ),
                             ],
                           ),
                           Text(
-                            item.pairValue,
+                            item.dollarRate.toString(),
                             style: TextStyle(
                                 fontFamily: "Popins",
                                 fontSize: 11.5,
@@ -316,14 +314,14 @@ Widget card(BuildContext ctx, ethMarket item) {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      item.priceValue,
+                      item.dollarRate,
                       style: TextStyle(
                           fontFamily: "Popins",
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      item.priceDollar,
+                      item.country,
                       style: TextStyle(
                           fontFamily: "Popins",
                           fontSize: 11.5,
@@ -338,12 +336,12 @@ Widget card(BuildContext ctx, ethMarket item) {
                     height: 25.0,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(2.0)),
-                        color: item.colorChg),
+                        color: Colors.green),
                     child: Center(
                         child: Padding(
                       padding: const EdgeInsets.only(left: 5.0, right: 5.0),
                       child: Text(
-                        item.percent,
+                        displayUserCurrency(item.country),
                         style: TextStyle(
                             fontWeight: FontWeight.w600, color: Colors.white),
                       ),
@@ -363,4 +361,14 @@ Widget card(BuildContext ctx, ethMarket item) {
       ],
     ),
   );
+}
+
+String displayUserCurrency(String country) {
+  String currencySymbol = getUserCurrency(country);
+  return currencySymbol;
+}
+
+String displayUserCurrencyName(String country) {
+  String currencyData = getUserCurrencyName(country);
+  return currencyData;
 }
