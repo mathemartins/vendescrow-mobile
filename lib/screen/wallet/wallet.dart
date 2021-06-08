@@ -1,7 +1,11 @@
 import 'dart:math';
 
 import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/component/AssetsWallet/BitcoinWallet.dart';
+import 'package:crypto_v2/component/AssetsWallet/DashWallet.dart';
+import 'package:crypto_v2/component/AssetsWallet/DogecoinWallet.dart';
 import 'package:crypto_v2/component/AssetsWallet/EthereumWallet.dart';
+import 'package:crypto_v2/component/AssetsWallet/LitecoinWallet.dart';
 import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
 import 'package:crypto_v2/screen/wallet/walletDetail.dart';
 import 'package:flutter/animation.dart';
@@ -27,6 +31,10 @@ class wallet extends StatefulWidget {
 class _walletState extends State<wallet> {
   APIService apiService = new APIService();
   EthereumWallet userEthWallet = EthereumWallet();
+  BitcoinWallet userBTCWallet = BitcoinWallet();
+  // DashWallet userDashWallet = DashWallet();
+  // DogecoinWallet userDogeWallet = DogecoinWallet();
+  // LitecoinWallet userLTCWallet = LitecoinWallet();
   BlackMarketRate blackMarketRate = BlackMarketRate();
   bool loadData = true;
 
@@ -39,9 +47,18 @@ class _walletState extends State<wallet> {
   void fetchPageData() async {
     var responseFiatData = await apiService.get('fiat-rates/');
     var responseUserWallet = await apiService.get('wallet/');
+    var responseUserBTCWallet = await apiService.get('wallet/btc/');
+    // var responseUserLTCWallet = await apiService.get('wallet/ltc/');
+    // var responseUserDashWallet = await apiService.get('wallet/dash/');
+    // var responseUserDogeWallet = await apiService.get('wallet/doge/');
 
     setState(() {
       userEthWallet = EthereumWallet.fromJson(responseUserWallet['data'][0]);
+      userBTCWallet = BitcoinWallet.fromJson(responseUserBTCWallet['data'][0]);
+      // userDashWallet = DashWallet.fromJson(responseUserDashWallet['data'][0]);
+      // userDogeWallet =
+      //     DogecoinWallet.fromJson(responseUserDogeWallet['data'][0]);
+      // userLTCWallet = LitecoinWallet.fromJson(responseUserLTCWallet['data'][0]);
       blackMarketRate = BlackMarketRate.fromJson(responseFiatData['data'][0]);
       loadData = false;
     });
@@ -64,9 +81,12 @@ class _walletState extends State<wallet> {
                   child: Container(
                       child: Column(
                     children: [
+                      displayBTCWallet(context, userBTCWallet),
                       displayEthWallet(context, userEthWallet),
-                      displayEthWallet(context, userEthWallet),
-                      displayEthWallet(context, userEthWallet)
+                      displayTetherWallet(context, userEthWallet),
+                      // displayLTCWallet(context, userLTCWallet),
+                      // displayDogeWallet(context, userDogeWallet),
+                      // displayDashWallet(context, userDashWallet),
                     ],
                   )),
                 ),
@@ -189,7 +209,7 @@ class _walletState extends State<wallet> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          "${userEthWallet.balance} Eth",
+                          "${userEthWallet.balance} ETH",
                           style: TextStyle(
                               fontFamily: "Popins",
                               fontSize: 14.5,
@@ -222,6 +242,481 @@ class _walletState extends State<wallet> {
 
   displayUserEth(balance) {
     return double.parse(balance).toStringAsFixed(5);
+  }
+
+  displayTetherWallet(BuildContext ctx, EthereumWallet userEthWallet) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 7.0),
+      child: Column(
+        children: <Widget>[
+          InkWell(
+            onTap: () {
+              Navigator.of(ctx).push(PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => new walletDetail(
+                      assetName: userEthWallet.tether.shortName)));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Image.network(
+                          userEthWallet.tether.icon.toString(),
+                          height: 25.0,
+                          fit: BoxFit.contain,
+                          width: 22.0,
+                        ),
+                      ),
+                      Container(
+                        width: 95.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              userEthWallet.tether.name,
+                              style: TextStyle(
+                                  fontFamily: "Popins", fontSize: 16.5),
+                            ),
+                            Text(
+                              userEthWallet.tether.frozen == true
+                                  ? "Froze: ${userEthWallet.tether.amount}"
+                                  : "No Frozen Asset",
+                              style: TextStyle(
+                                  fontFamily: "Popins",
+                                  fontSize: 11.5,
+                                  color: Theme.of(ctx).hintColor),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "${userEthWallet.tether.balance} USDT",
+                          style: TextStyle(
+                              fontFamily: "Popins",
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_right,
+                          size: 19.0,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 20.0, top: 6.0),
+            child: Container(
+              width: double.infinity,
+              height: 0.5,
+              decoration: BoxDecoration(
+                  color: Theme.of(ctx).hintColor.withOpacity(0.1)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  displayBTCWallet(BuildContext ctx, BitcoinWallet userBTCWallet) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 7.0),
+      child: Column(
+        children: <Widget>[
+          InkWell(
+            onTap: () {
+              Navigator.of(ctx).push(PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      new walletDetail(assetName: userBTCWallet.shortName)));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Image.network(
+                          userBTCWallet.icon.toString(),
+                          height: 25.0,
+                          fit: BoxFit.contain,
+                          width: 22.0,
+                        ),
+                      ),
+                      Container(
+                        width: 95.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              userBTCWallet.name,
+                              style: TextStyle(
+                                  fontFamily: "Popins", fontSize: 16.5),
+                            ),
+                            Text(
+                              userBTCWallet.frozen == true
+                                  ? "Froze: ${userBTCWallet.amount}"
+                                  : "No Frozen Asset",
+                              style: TextStyle(
+                                  fontFamily: "Popins",
+                                  fontSize: 11.5,
+                                  color: Theme.of(ctx).hintColor),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "${userBTCWallet.balance} BTC",
+                          style: TextStyle(
+                              fontFamily: "Popins",
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_right,
+                          size: 19.0,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 20.0, top: 6.0),
+            child: Container(
+              width: double.infinity,
+              height: 0.5,
+              decoration: BoxDecoration(
+                  color: Theme.of(ctx).hintColor.withOpacity(0.1)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  displayLTCWallet(BuildContext ctx, LitecoinWallet userLTCWallet) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 7.0),
+      child: Column(
+        children: <Widget>[
+          InkWell(
+            onTap: () {
+              Navigator.of(ctx).push(PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      new walletDetail(assetName: userLTCWallet.shortName)));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Image.network(
+                          userLTCWallet.icon.toString(),
+                          height: 25.0,
+                          fit: BoxFit.contain,
+                          width: 22.0,
+                        ),
+                      ),
+                      Container(
+                        width: 95.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              userLTCWallet.name,
+                              style: TextStyle(
+                                  fontFamily: "Popins", fontSize: 16.5),
+                            ),
+                            Text(
+                              userLTCWallet.frozen == true
+                                  ? "Froze: ${userLTCWallet.amount}"
+                                  : "No Frozen Asset",
+                              style: TextStyle(
+                                  fontFamily: "Popins",
+                                  fontSize: 11.5,
+                                  color: Theme.of(ctx).hintColor),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "${userLTCWallet.balance} LTC",
+                          style: TextStyle(
+                              fontFamily: "Popins",
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_right,
+                          size: 19.0,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 20.0, top: 6.0),
+            child: Container(
+              width: double.infinity,
+              height: 0.5,
+              decoration: BoxDecoration(
+                  color: Theme.of(ctx).hintColor.withOpacity(0.1)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  displayDogeWallet(BuildContext ctx, DogecoinWallet userDogeWallet) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 7.0),
+      child: Column(
+        children: <Widget>[
+          InkWell(
+            onTap: () {
+              Navigator.of(ctx).push(PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      new walletDetail(assetName: userDogeWallet.shortName)));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Image.network(
+                          userDogeWallet.icon.toString(),
+                          height: 25.0,
+                          fit: BoxFit.contain,
+                          width: 22.0,
+                        ),
+                      ),
+                      Container(
+                        width: 95.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              userDogeWallet.name,
+                              style: TextStyle(
+                                  fontFamily: "Popins", fontSize: 16.5),
+                            ),
+                            Text(
+                              userDogeWallet.frozen == true
+                                  ? "Froze: ${userDogeWallet.amount}"
+                                  : "No Frozen Asset",
+                              style: TextStyle(
+                                  fontFamily: "Popins",
+                                  fontSize: 11.5,
+                                  color: Theme.of(ctx).hintColor),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "${userDogeWallet.balance} DOGE",
+                          style: TextStyle(
+                              fontFamily: "Popins",
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_right,
+                          size: 19.0,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 20.0, top: 6.0),
+            child: Container(
+              width: double.infinity,
+              height: 0.5,
+              decoration: BoxDecoration(
+                  color: Theme.of(ctx).hintColor.withOpacity(0.1)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  displayDashWallet(BuildContext ctx, DashWallet userDashWallet) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 7.0),
+      child: Column(
+        children: <Widget>[
+          InkWell(
+            onTap: () {
+              Navigator.of(ctx).push(PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      new walletDetail(assetName: userDashWallet.shortName)));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                        child: Image.network(
+                          userDashWallet.icon.toString(),
+                          height: 25.0,
+                          fit: BoxFit.contain,
+                          width: 22.0,
+                        ),
+                      ),
+                      Container(
+                        width: 95.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              userDashWallet.name,
+                              style: TextStyle(
+                                  fontFamily: "Popins", fontSize: 16.5),
+                            ),
+                            Text(
+                              userDashWallet.frozen == true
+                                  ? "Froze: ${userDashWallet.amount}"
+                                  : "No Frozen Asset",
+                              style: TextStyle(
+                                  fontFamily: "Popins",
+                                  fontSize: 11.5,
+                                  color: Theme.of(ctx).hintColor),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "${userDashWallet.balance} DASH",
+                          style: TextStyle(
+                              fontFamily: "Popins",
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_right,
+                          size: 19.0,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 20.0, top: 6.0),
+            child: Container(
+              width: double.infinity,
+              height: 0.5,
+              decoration: BoxDecoration(
+                  color: Theme.of(ctx).hintColor.withOpacity(0.1)),
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
 

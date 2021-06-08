@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:crypto_v2/firebase_notification_handler.dart';
 import 'package:crypto_v2/screen/intro/on_Boarding.dart';
 import 'package:crypto_v2/screen/setting/themes.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:global_configuration/global_configuration.dart';
@@ -21,12 +25,16 @@ class MyHttpOverrides extends HttpOverrides {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
+  await Firebase.initializeApp();
   print(CustomTrace(StackTrace.current,
       message: "base_url: ${GlobalConfiguration().getValue('base_url')}"));
   print(CustomTrace(StackTrace.current,
       message:
           "api_base_url: ${GlobalConfiguration().getValue('api_base_url')}"));
   HttpOverrides.global = new MyHttpOverrides();
+
+  FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
+
   runApp(myApp());
 }
 
@@ -41,12 +49,16 @@ class myApp extends StatefulWidget {
 class _myAppState extends State<myApp> {
   /// Create _themeBloc for double theme (Dark and White theme)
   ThemeBloc _themeBloc;
+  FirebaseNotifications firebaseNotifications = new FirebaseNotifications();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _themeBloc = ThemeBloc();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      firebaseNotifications.setupFirebase(context);
+    });
   }
 
   @override
@@ -165,4 +177,11 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
+}
+
+Future<void> _backgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('Handle Background Service $message');
+  dynamic data = message.data['data'];
+  FirebaseNotifications.showNotification(data['title'], data['body']);
 }

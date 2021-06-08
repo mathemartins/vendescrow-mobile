@@ -37,10 +37,10 @@ class LiveCryptoAssetState extends State<LiveCryptoAsset> {
 
   void fetchPageData() async {
     var responseFiatData = await apiService.get('fiat-rates/');
-    var responseCurrentUser = await apiService.getCurrentUser();
+    var responseCurrentUser = await apiService.get('accounts/retrieve/');
 
     setState(() {
-      user = responseCurrentUser;
+      user = User.fromJson(responseCurrentUser['data'][0]);
       _blackMarketRate = BlackMarketRate.fromJson(responseFiatData['data'][0]);
       loadData = false;
     });

@@ -2,13 +2,13 @@ getUserCurrency(String country) {
   var command = country;
   switch (command) {
     case 'Nigeria':
-      return '\u{20A6}';
+      return 'NGN';
       break;
     case 'Ghana':
       return '\u{20B5}';
       break;
     case 'Kenya':
-      return 'KSh';
+      return 'KSH';
       break;
     default:
       return '\u{0024}';

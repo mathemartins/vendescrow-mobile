@@ -15,6 +15,7 @@ import 'package:crypto_v2/screen/news/news_list_detail/news_list_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sparkline/flutter_sparkline.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'LiveCryptoAsset.dart';
 
@@ -23,6 +24,7 @@ class home extends StatefulWidget {
 }
 
 class _homeState extends State<home> {
+  IO.Socket socket;
   List<LiveCrypto> _liveCrypto = List<LiveCrypto>();
   List<News> _news = List<News>();
   APIService apiService = new APIService();
@@ -32,13 +34,11 @@ class _homeState extends State<home> {
   bool loadCard = true;
 
   @override
-  @override
   void initState() {
     super.initState();
     apiService.getLiveCryptoData().then((value) {
       setState(() {
         _liveCrypto.addAll(value);
-        apiService.getCurrentUser().then((value) => user = value);
       });
     });
 

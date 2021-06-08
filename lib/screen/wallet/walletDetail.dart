@@ -336,7 +336,10 @@ class _walletDetailState extends State<walletDetail>
 
   String getUserPriceInFiat(
       balance, double price, String country, double dollarRate) {
-    final priceIndollars = balance * price;
+    print(balance);
+    print(price);
+    final floatVal = double.parse(balance);
+    final priceIndollars = floatVal * price;
     final userLocalFiat = k_m_b_generator(priceIndollars, dollarRate);
     final currencySymbol = getUserCurrency(country);
     return '$currencySymbol $userLocalFiat';
@@ -350,7 +353,8 @@ class _walletDetailState extends State<walletDetail>
   getUserAvailablePriceInFiat(String balance, String amount, double price,
       String country, double dollarRate) {
     final availableBal = double.parse(balance) - double.parse(amount);
-    return getUserPriceInFiat(availableBal, price, country, dollarRate);
+    final availableBalStr = availableBal.toString();
+    return getUserPriceInFiat(availableBalStr, price, country, dollarRate);
   }
 
   String numberFormatter(double amount) {
@@ -371,7 +375,7 @@ class _walletDetailState extends State<walletDetail>
 
   getUserFrozenPriceInFiat(
       String amount, double price, String country, double dollarRate) {
-    final frozen = double.parse(amount);
+    final frozen = amount;
     return getUserPriceInFiat(frozen, price, country, dollarRate);
   }
 
@@ -505,8 +509,11 @@ class _walletDetailState extends State<walletDetail>
                           });
                         }
                       },
-                      onSaved: (input) =>
-                          _ethereumTransferRequestModel.amount = input,
+                      onSaved: (input) {
+                        _ethereumTransferRequestModel.amount = input;
+                        _ethereumTransferRequestModel.networkFee =
+                            "${ethereumNetworkFee.fast}";
+                      },
                       validator: (input) {
                         if (input.isEmpty) {
                           return "Transaction amount has  no value";
@@ -680,8 +687,6 @@ class _walletDetailState extends State<walletDetail>
     final gasFeeInGwei = fast / 10;
     final fastGas =
         double.parse(((25000 * gasFeeInGwei) * 0.000000001).toStringAsFixed(8));
-    // final gasFeeInEth = (gasFeeInGwei * 0.00000001) / 10;
-    // final newGasFeeInEth = gasFeeInEth.toStringAsFixed(5);
     return double.parse(amount) - fastGas;
   }
 }

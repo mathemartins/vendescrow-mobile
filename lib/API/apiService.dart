@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto_v2/Helpers/custom_trace.dart';
+import 'package:crypto_v2/component/AccountLinkage/AccountLinkageModel.dart';
 import 'package:crypto_v2/component/AssetsWallet/EthereumTransferModel.dart';
 import 'package:crypto_v2/component/News/NewsModel.dart';
 import 'package:crypto_v2/component/User/UserModel.dart';
@@ -18,8 +19,9 @@ class APIService {
 
   Future<User> login(User user) async {
     final String url = '${GlobalConfiguration().getValue('api_base_url')}auth/';
+    Uri uri = Uri.parse(url);
     final client = new http.Client();
-    final response = await client.post(url, body: user.toMap());
+    final response = await client.post(uri, body: user.toMap());
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       setCurrentUser(response.body);
@@ -34,9 +36,10 @@ class APIService {
   Future<User> register(User user) async {
     final String url =
         '${GlobalConfiguration().getValue('api_base_url')}auth/register/';
+    Uri uri = Uri.parse(url);
     final client = new http.Client();
     final response = await client.post(
-      url,
+      uri,
       body: user.toJson(),
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -52,9 +55,10 @@ class APIService {
   Future<bool> resetPassword(User user) async {
     final String url =
         '${GlobalConfiguration().getValue('api_base_url')}send_reset_link_email';
+    Uri uri = Uri.parse(url);
     final client = new http.Client();
     final response = await client.post(
-      url,
+      uri,
       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
       body: json.encode(user.toMap()),
     );
@@ -88,8 +92,7 @@ class APIService {
   Future<User> getCurrentUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (currentUser.value.token == null && prefs.containsKey('current_user')) {
-      currentUser.value =
-          User.fromJson(json.decode(await prefs.get('current_user')));
+      currentUser.value = User.fromJson(json.decode(prefs.get('current_user')));
       currentUser.value.active = true;
     } else {
       currentUser.value.active = false;
@@ -111,7 +114,8 @@ class APIService {
         '${GlobalConfiguration().getValue('coin_market_cap_api_url')}v1/cryptocurrency/listings/latest';
     final String cmcap_apiToken =
         '${GlobalConfiguration().getValue('coin_market_cap_api_key')}';
-    final response = await client.get(url, headers: {
+    Uri uri = Uri.parse(url);
+    final response = await client.get(uri, headers: {
       "Content-Type": "application/json; charset=utf-8",
       "X-CMC_PRO_API_KEY": "$cmcap_apiToken"
     });
@@ -132,7 +136,8 @@ class APIService {
     final client = new http.Client();
     final String url =
         '${GlobalConfiguration().getValue('api_base_url')}fiat-rates/data/';
-    final response = await client.get(url, headers: {
+    Uri uri = Uri.parse(url);
+    final response = await client.get(uri, headers: {
       "Content-Type": "application/json; charset=utf-8",
     });
 
@@ -154,7 +159,8 @@ class APIService {
         '${GlobalConfiguration().getValue('coin_market_cap_api_url')}v1/cryptocurrency/info?symbol=$cryptoAsset';
     final String cmcap_apiToken =
         '${GlobalConfiguration().getValue('coin_market_cap_api_key')}';
-    final response = await client.get(url, headers: {
+    Uri uri = Uri.parse(url);
+    final response = await client.get(uri, headers: {
       "Content-Type": "application/json; charset=utf-8",
       "X-CMC_PRO_API_KEY": "$cmcap_apiToken"
     });
@@ -174,7 +180,8 @@ class APIService {
         '${GlobalConfiguration().getValue('coin_market_cap_api_url')}v1/cryptocurrency/quotes/latest?symbol=$cryptoAsset';
     final String cmcap_apiToken =
         '${GlobalConfiguration().getValue('coin_market_cap_api_key')}';
-    final response = await client.get(url, headers: {
+    Uri uri = Uri.parse(url);
+    final response = await client.get(uri, headers: {
       "Content-Type": "application/json; charset=utf-8",
       "X-CMC_PRO_API_KEY": "$cmcap_apiToken"
     });
@@ -192,7 +199,8 @@ class APIService {
     final client = new http.Client();
     final String url =
         '${GlobalConfiguration().getValue('ethereum_gas_station_url')}?api-key=056800238bee56d03c79cee8f56543807341924a39e4370805475bfd96e7';
-    final response = await client.get(url, headers: {
+    Uri uri = Uri.parse(url);
+    final response = await client.get(uri, headers: {
       "Content-Type": "application/json; charset=utf-8",
     });
     print(response.body);
@@ -211,7 +219,8 @@ class APIService {
         '${GlobalConfiguration().getValue('nomics_api_base_url')}v1/currencies/ticker';
     final String nomics_apiToken =
         '${GlobalConfiguration().getValue('nomics_api_key')}';
-    final response = await client.get(url, headers: {
+    Uri uri = Uri.parse(url);
+    final response = await client.get(uri, headers: {
       "Content-Type": "application/json; charset=utf-8",
       "key": "$nomics_apiToken"
     });
@@ -232,7 +241,8 @@ class APIService {
     final client = new http.Client();
     final String url =
         '${GlobalConfiguration().getValue("api_base_url")}posts/';
-    final response = await client.get(url, headers: {
+    Uri uri = Uri.parse(url);
+    final response = await client.get(uri, headers: {
       "Content-Type": "application/json; charset=utf-8",
     });
     final newsData = List<News>();
@@ -252,8 +262,9 @@ class APIService {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String token = preferences.getString("token");
     final String url = '${GlobalConfiguration().getValue('base_url')}$path';
+    Uri uri = Uri.parse(url);
     String payload = json.encode(data);
-    var response = await http.post(url, body: payload, headers: {
+    var response = await http.post(uri, body: payload, headers: {
       'Content-Type': 'application/json; charset=UTF-8',
     });
     print(json.decode(response.body));
@@ -270,8 +281,9 @@ class APIService {
     String token = preferences.getString("token");
     final String url =
         '${GlobalConfiguration().getValue('api_base_url')}wallet/ethereum/transfer/';
+    Uri uri = Uri.parse(url);
 
-    final response = await http.post(url,
+    final response = await http.post(uri,
         body: ethereumTransferRequestModel.toJson(),
         headers: {"Authorization": "Bearer $token"});
 
@@ -284,13 +296,32 @@ class APIService {
     }
   }
 
+  /// Activate authorization lock
+  Future<AccountLinkage> linkAccount(AccountLinkage accountLinkage) async {
+    final String url =
+        '${GlobalConfiguration().getValue('api_base_url')}connect-mono/';
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token");
+    Uri uri = Uri.parse(url);
+    final response = await http.post(uri,
+        body: accountLinkage.toJson(),
+        headers: {"Authorization": "Bearer $token"});
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return AccountLinkage.fromJson(json.decode(response.body));
+    } else {
+      print(CustomTrace(StackTrace.current, message: response.body).toString());
+      throw new Exception(response.body);
+    }
+  }
+
   /// post for general use case
   Future post(String path, Map data) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String token = preferences.getString("token");
     final String url = '${GlobalConfiguration().getValue('api_base_url')}$path';
+    Uri uri = Uri.parse(url);
     String payload = json.encode(data);
-    var response = await http.post(url, body: payload, headers: {
+    var response = await http.post(uri, body: payload, headers: {
       'Content-Type': 'application/json; charset=UTF-8',
       "Authorization": "Bearer $token"
     });
@@ -307,8 +338,9 @@ class APIService {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String token = preferences.getString("token");
     final String url = '${GlobalConfiguration().getValue('api_base_url')}$path';
+    Uri uri = Uri.parse(url);
     var response =
-        await http.get(url, headers: {"Authorization": "Bearer $token"});
+        await http.get(uri, headers: {"Authorization": "Bearer $token"});
     print(response.body);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return json.decode(response.body);

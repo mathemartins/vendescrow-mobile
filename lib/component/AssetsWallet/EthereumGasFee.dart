@@ -1,15 +1,15 @@
 class EthereumNetworkFee {
-  int fast;
-  int fastest;
-  int safeLow;
-  int average;
-  double blockTime;
-  int blockNum;
-  double speed;
-  double safeLowWait;
-  double avgWait;
-  double fastWait;
-  double fastestWait;
+  dynamic fast;
+  dynamic fastest;
+  dynamic safeLow;
+  dynamic average;
+  dynamic blockTime;
+  dynamic blockNum;
+  dynamic speed;
+  dynamic safeLowWait;
+  dynamic avgWait;
+  dynamic fastWait;
+  dynamic fastestWait;
   GasPriceRange gasPriceRange;
 
   EthereumNetworkFee(
@@ -64,42 +64,42 @@ class EthereumNetworkFee {
 }
 
 class GasPriceRange {
-  double d4;
-  double d6;
-  double d8;
-  double d10;
-  double d20;
-  double d30;
-  double d40;
-  double d50;
-  double d60;
-  double d70;
-  double d80;
-  double d90;
-  double d100;
-  double d110;
-  double d120;
-  double d130;
-  double d140;
-  double d150;
-  double d160;
-  double d170;
-  double d180;
-  double d190;
-  double d210;
-  double d230;
-  double d250;
-  double d270;
-  double d290;
-  double d310;
-  double d330;
-  double d350;
-  double d360;
-  double d370;
-  double d390;
-  double d410;
-  double d430;
-  double d450;
+  dynamic d4;
+  dynamic d6;
+  dynamic d8;
+  dynamic d10;
+  dynamic d20;
+  dynamic d30;
+  dynamic d40;
+  dynamic d50;
+  dynamic d60;
+  dynamic d70;
+  dynamic d80;
+  dynamic d90;
+  dynamic d100;
+  dynamic d110;
+  dynamic d120;
+  dynamic d130;
+  dynamic d140;
+  dynamic d150;
+  dynamic d160;
+  dynamic d170;
+  dynamic d180;
+  dynamic d190;
+  dynamic d210;
+  dynamic d230;
+  dynamic d250;
+  dynamic d270;
+  dynamic d290;
+  dynamic d310;
+  dynamic d330;
+  dynamic d350;
+  dynamic d360;
+  dynamic d370;
+  dynamic d390;
+  dynamic d410;
+  dynamic d430;
+  dynamic d450;
 
   GasPriceRange(
       {this.d4,

@@ -1,4 +1,12 @@
+import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/component/AccountLinkage/AccountLinkageModel.dart';
+import 'package:crypto_v2/component/AuthorizationLock/AuthLock.dart';
+import 'package:crypto_v2/component/User/UserModel.dart';
 import 'package:crypto_v2/component/style.dart';
+import 'package:crypto_v2/screen/AnotherTemplate/Template1/T1_BottomNav2_chat.dart';
+import 'package:crypto_v2/screen/AnotherTemplate/Template1/T1_BottomNav3_new_wallet.dart';
+import 'package:crypto_v2/screen/AnotherTemplate/Template1/T1_bottomNavBar.dart';
+import 'package:crypto_v2/screen/AnotherTemplate/Template1/T1_wallet_detail.dart';
 import 'package:crypto_v2/screen/market/markets.dart';
 import 'package:crypto_v2/screen/setting/themes.dart';
 import 'package:flutter/material.dart';
@@ -21,126 +29,186 @@ class _settingState extends State<setting> {
   ThemeBloc themeBloc;
   _settingState(this.themeBloc);
   bool theme = true;
+  User user = new User();
+  UserLock userLock = new UserLock();
+  AccountLinkage _accountLinkage = new AccountLinkage();
+  APIService apiService = new APIService();
+  bool loadCard = true;
   String _img = "assets/image/setting/lightMode.png";
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 40.0),
-              child: Center(
-                  child: Text(
-                "Settings",
-                style: TextStyle(
-                    fontFamily: "Sans",
-                    fontSize: 19.5,
-                    fontWeight: FontWeight.w700),
-              )),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-
-            ///
-            /// Image header
-            ///
-            InkWell(
-              onTap: () {
-                ///
-                /// Change image header and theme color if user click image
-                ///
-                if (theme == true) {
-                  setState(() {
-                    _img = "assets/image/setting/nightMode.png";
-                    theme = false;
-                  });
-                  themeBloc.selectedTheme.add(_buildLightTheme());
-                } else {
-                  themeBloc.selectedTheme.add(_buildDarkTheme());
-                  setState(() {
-                    theme = true;
-                    _img = "assets/image/setting/lightMode.png";
-                  });
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                child: Container(
-                  height: 125.0,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      image: DecorationImage(
-                          image: AssetImage(_img), fit: BoxFit.cover)),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            listSetting("PASSCODE LOCK", "Disable"),
-            SizedBox(
-              height: 10.0,
-            ),
-            listSetting("SIGNAL NOTIFICATION", "Enabled"),
-            SizedBox(
-              height: 10.0,
-            ),
-            listSetting("LANGUAGE", "English"),
-            SizedBox(
-              height: 10.0,
-            ),
-
-            ///
-            /// Navigate to theme screen
-            ///
-            InkWell(
-                onTap: () {
-                  Navigator.of(context).push(PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => new market()));
-                },
-                child: listSetting("UI KIT WALLET", "See all template")),
-          ],
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    fetchPageContent();
   }
 
-  Widget listSetting(String header, String title) {
-    return Padding(
-      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 10.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            header,
-            style: TextStyle(
-                color: Theme.of(context).hintColor,
-                fontFamily: "Sans",
-                fontSize: 13.0),
-          ),
-          SizedBox(
-            height: 9.0,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                title,
-                style: TextStyle(
-                    fontSize: 17.0,
-                    fontFamily: "Popins",
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w300),
+  void fetchPageContent() async {
+    var responseCurrentUser = await apiService.get('accounts/retrieve/');
+    var responseUserLock = await apiService.get('auth/user-lock/');
+    var responseUserAccountLinkage = await apiService.get('connect-mono/');
+
+    setState(() {
+      user = User.fromJson(responseCurrentUser['data'][0]);
+      userLock = UserLock.fromJson(responseUserLock['data'][0]);
+      _accountLinkage =
+          AccountLinkage.fromJson(responseUserAccountLinkage['data'][0]);
+      loadCard = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return loadCard
+        ? Center(child: CircularProgressIndicator())
+        : Scaffold(
+            appBar: AppBar(
+              elevation: 0.0,
+              brightness: Brightness.dark,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              title: Text(
+                'Settings',
+                style: TextStyle(color: Theme.of(context).textSelectionColor),
               ),
-              Icon(Icons.keyboard_arrow_right)
-            ],
-          ),
-          line()
-        ],
+              iconTheme: IconThemeData(color: Colors.white),
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  ///
+                  /// Image header
+                  ///
+                  InkWell(
+                    onTap: () {
+                      ///
+                      /// Change image header and theme color if user click image
+                      ///
+                      if (theme == true) {
+                        setState(() {
+                          _img = "assets/image/setting/nightMode.png";
+                          theme = false;
+                        });
+                        themeBloc.selectedTheme.add(_buildLightTheme());
+                      } else {
+                        themeBloc.selectedTheme.add(_buildDarkTheme());
+                        setState(() {
+                          theme = true;
+                          _img = "assets/image/setting/lightMode.png";
+                        });
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                      child: Container(
+                        height: 125.0,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                            image: DecorationImage(
+                                image: AssetImage(_img), fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  listSetting(
+                      "Profile",
+                      '${user.firstName.toUpperCase()} ${user.lastName.toUpperCase()}',
+                      user.username.toLowerCase().toString(),
+                      new T1_bottomNav()),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  listSetting(
+                      userLock.pin != null
+                          ? "Tap To Change Auth Code"
+                          : "Authorization Code",
+                      userLock.pin != null ? '* * * *' : 'Disable',
+                      '${user.slug}',
+                      new T1_wallet_detail()),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  listSetting(
+                      "Sync Bank Account",
+                      _accountLinkage.exchangeToken.isEmpty
+                          ? "Not Connected"
+                          : "Connected",
+                      'mono-link',
+                      new T1_new_wallet()),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  listSetting("Support / Tap to chat", "support@vendescrow.com",
+                      'chat-link', new T1_chat()),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+
+                  ///
+                  /// Navigate to theme screen
+                  ///
+                  InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => new market()));
+                      },
+                      child: listSetting(
+                          "Company, Terms & Conditions, Faqs",
+                          "Vendescrow",
+                          'vendescrow-slug-url',
+                          new T1_bottomNav())),
+                ],
+              ),
+            ),
+          );
+  }
+
+  Widget listSetting(
+      String header, String title, String linkSlug, classInstance) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context)
+            .push(PageRouteBuilder(pageBuilder: (_, __, ___) => classInstance));
+      },
+      child: Padding(
+        padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              header,
+              style: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontFamily: "Sans",
+                  fontSize: 13.0),
+            ),
+            SizedBox(
+              height: 9.0,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                  title,
+                  style: TextStyle(
+                      fontSize: 17.0,
+                      fontFamily: "Popins",
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.w300),
+                ),
+                Icon(Icons.keyboard_arrow_right)
+              ],
+            ),
+            line()
+          ],
+        ),
       ),
     );
   }

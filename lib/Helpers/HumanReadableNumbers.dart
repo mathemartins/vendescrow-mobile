@@ -15,6 +15,6 @@ String k_m_b_generator(num, userFiat) {
   } else if (num > 999999999) {
     return "${(num / 1000000000).toStringAsFixed(2)} B";
   } else {
-    return num.toString();
+    return num.toStringAsFixed(2);
   }
 }

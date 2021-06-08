@@ -10,7 +10,7 @@ class CryptoValueDetail {
   dynamic circulatingSupply;
   dynamic totalSupply;
   dynamic isActive;
-  String platform;
+  dynamic platform;
   dynamic cmcRank;
   dynamic isFiat;
   String lastUpdated;
@@ -96,15 +96,15 @@ class Quote {
 }
 
 class USD {
-  double price;
-  double volume24h;
-  double percentChange1h;
-  double percentChange24h;
-  double percentChange7d;
-  double percentChange30d;
-  double percentChange60d;
-  double percentChange90d;
-  double marketCap;
+  dynamic price;
+  dynamic volume24h;
+  dynamic percentChange1h;
+  dynamic percentChange24h;
+  dynamic percentChange7d;
+  dynamic percentChange30d;
+  dynamic percentChange60d;
+  dynamic percentChange90d;
+  dynamic marketCap;
   String lastUpdated;
 
   USD(

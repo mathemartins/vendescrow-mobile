@@ -11,7 +11,7 @@ class CryptoDetail {
   List<String> tags;
   List<String> tagNames;
   List<String> tagGroups;
-  String platform;
+  dynamic platform;
   String dateAdded;
   String twitterUsername;
   int isHidden;
