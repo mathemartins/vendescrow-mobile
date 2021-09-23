@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:crypto_v2/firebase_notification_handler.dart';
+import 'package:crypto_v2/screen/intro/login.dart';
 import 'package:crypto_v2/screen/intro/on_Boarding.dart';
 import 'package:crypto_v2/screen/setting/themes.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,7 +10,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:freshchat_sdk/freshchat_sdk.dart';
 import 'package:global_configuration/global_configuration.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Helpers/custom_trace.dart';
 
@@ -26,11 +29,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
   await Firebase.initializeApp();
-  print(CustomTrace(StackTrace.current,
-      message: "base_url: ${GlobalConfiguration().getValue('base_url')}"));
-  print(CustomTrace(StackTrace.current,
-      message:
-          "api_base_url: ${GlobalConfiguration().getValue('api_base_url')}"));
+  print(CustomTrace(StackTrace.current,message: "base_url: ${GlobalConfiguration().getValue('base_url')}"));
+  print(CustomTrace(StackTrace.current,message:"api_base_url: ${GlobalConfiguration().getValue('api_base_url')}"));
   HttpOverrides.global = new MyHttpOverrides();
 
   FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
@@ -50,6 +50,7 @@ class _myAppState extends State<myApp> {
   /// Create _themeBloc for double theme (Dark and White theme)
   ThemeBloc _themeBloc;
   FirebaseNotifications firebaseNotifications = new FirebaseNotifications();
+  String token;
 
   @override
   void initState() {
@@ -59,6 +60,20 @@ class _myAppState extends State<myApp> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       firebaseNotifications.setupFirebase(context);
     });
+
+    // Freshchat.init(
+    //     "YOUR-APP-ID", "YOUR-APP-KEY", "YOUR-DOMAIN",
+    //     teamMemberInfoVisible:true,
+    //     cameraCaptureEnabled:true,
+    //     gallerySelectionEnabled:true,
+    //     responseExpectationEnabled:true);
+
+    performCheck();
+  }
+
+  void performCheck() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    token = preferences.getString("token");
   }
 
   @override
@@ -85,10 +100,9 @@ class _myAppState extends State<myApp> {
           /// Move splash screen to onBoarding Layout
           /// Routes
           ///
-          routes: <String, WidgetBuilder>{
-            "onBoarding": (BuildContext context) =>
-                new onBoarding(themeBloc: _themeBloc)
-          },
+          routes: token == null ? <String, WidgetBuilder>
+          {"onBoarding": (BuildContext context) => new onBoarding(themeBloc: _themeBloc)} :
+          { "login": (BuildContext context) => new login(themeBloc: _themeBloc)}
         );
       },
     );

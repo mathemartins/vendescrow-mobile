@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../progressHUD.dart';
+import 'fingerprint_auth.dart';
 import 'forget_password.dart';
 
 class login extends StatefulWidget {
@@ -237,29 +238,52 @@ class _loginState extends State<login> {
                         ),
                       ),
 
-                      Padding(
-                        padding: const EdgeInsets.only(right: 23.0, top: 9.0),
-                        child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).pushReplacement(
-                                PageRouteBuilder(
-                                  pageBuilder: (_, __, ___) =>
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 23.0, top: 9.0),
+                            child: InkWell(
+                                onTap: () {
+                                  Navigator.of(context).pushReplacement(
+                                    PageRouteBuilder(
+                                      pageBuilder: (_, __, ___) => new fingerprint(themeBloc: _themeBloc,),
+                                    ),
+                                  );
+                                },
+                                child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text("Sign In Using Fingerprint", style: TextStyle(color: Colors.white70, fontSize: 12.0,),)
+                                )
+                            ),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.only(right: 23.0, top: 9.0),
+                            child: InkWell(
+                                onTap: () {
+                                  Navigator.of(context).pushReplacement(
+                                    PageRouteBuilder(
+                                      pageBuilder: (_, __, ___) =>
                                       new forgetPassword(
-                                    themeBloc: _themeBloc,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  "Forgot My Credentials?, Reset",
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12.0,
-                                  ),
-                                ))),
+                                        themeBloc: _themeBloc,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      "Forgot My Credentials?, Reset",
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12.0,
+                                      ),
+                                    ))),
+                          ),
+                        ],
                       ),
+
                     ],
                   ),
                 ),
@@ -296,7 +320,7 @@ class _loginState extends State<login> {
         isAPICallProcess = false;
       });
 
-      if (value.token.isNotEmpty) {
+      if (value.token != null) {
         final snackBar = SnackBar(
           content: Text(value.message.toString()),
         );
@@ -312,7 +336,7 @@ class _loginState extends State<login> {
         );
       } else {
         final snackBar = SnackBar(
-          content: Text("Error! With Login Credentials"),
+          content: Text("User with username and password does not exists."),
         );
         scaffoldKey.currentState.showSnackBar(snackBar);
       }

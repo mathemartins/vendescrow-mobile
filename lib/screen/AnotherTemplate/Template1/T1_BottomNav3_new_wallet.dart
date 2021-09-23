@@ -84,17 +84,14 @@ class _T1_new_walletState extends State<T1_new_wallet> {
                       height: 10.0,
                     ),
                     Text(
-                      _accountLinkage.exchangeToken.isNotEmpty
-                          ? 'Connected'
-                          : 'Connect Bank Data',
+                      _accountLinkage.exchangeToken != null ? 'Connected' : 'Connect Bank Data',
                       style: TextStyle(
                           fontFamily: "Popins",
                           fontWeight: FontWeight.w500,
                           fontSize: 17.0),
                     ),
                     Text(
-                      _accountLinkage.exchangeToken.isNotEmpty
-                          ? 'Sync Code: ${_accountLinkage.exchangeToken}'
+                      _accountLinkage.exchangeToken != null ? 'Sync Code: ${_accountLinkage.exchangeToken}'
                           : 'Sync Code: Data Communication Not Connected!',
                       style: TextStyle(
                           fontFamily: "Sans",
@@ -107,33 +104,26 @@ class _T1_new_walletState extends State<T1_new_wallet> {
                     ),
                     _card(
                         "assets/image/crypto_icon/icon_bitcoin.png",
-                        _accountLinkage.bank.isNotEmpty
-                            ? _accountLinkage.bank.toString()
-                            : "Tap to sync"),
-                    _accountLinkage.exchangeToken.isNotEmpty
-                        ? _card(
-                            "assets/image/crypto_icon/icon_bitcoin.png",
-                            _accountLinkage.fullName.isNotEmpty
-                                ? _accountLinkage.fullName.toString()
-                                : "")
-                        : "",
-                    _accountLinkage.exchangeToken.isNotEmpty
-                        ? _card(
-                            "assets/image/crypto_icon/icon_bitcoin.png",
-                            _accountLinkage.accountNumber.isNotEmpty
-                                ? _accountLinkage.accountNumber.toString()
-                                : "")
-                        : "",
-                    SizedBox(
-                      height: 40,
+                        _accountLinkage.bank != null ? _accountLinkage.bank.toString()
+                            : "Tap to sync"
                     ),
-                    _accountLinkage.exchangeToken.isNotEmpty
-                        ? _card(
+
+                    _card(
+                        "assets/image/crypto_icon/icon_bitcoin.png",
+                        _accountLinkage.fullName != null  ?
+                        _accountLinkage.fullName.toString() : ""
+                    ),
+                   _card(
+                            "assets/image/crypto_icon/icon_bitcoin.png",
+                            _accountLinkage.accountNumber != null ?
+                            _accountLinkage.accountNumber.toString() : ""
+                    ),
+                    SizedBox(height: 40,),
+                    _card(
                             "assets/image/crypto_icon/icon_elf.png",
-                            _accountLinkage.accountType.isNotEmpty
-                                ? "** All transactions should only be done from this account"
-                                : "")
-                        : "",
+                            _accountLinkage.accountType != null ?
+                            "** All transactions should only be done from this account" : ""
+                    ),
                   ],
                 ),
               ),
@@ -149,7 +139,7 @@ class _T1_new_walletState extends State<T1_new_wallet> {
       padding: const EdgeInsets.only(top: 12.0),
       child: InkWell(
         onTap: () {
-          _accountLinkage.exchangeToken.isNotEmpty
+          _accountLinkage.exchangeToken != null
               ? scaffoldKey.currentState.showSnackBar(
                   SnackBar(content: Text("Account already synced!")))
               : loadMonoWidget();

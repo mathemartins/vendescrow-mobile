@@ -1,5 +1,7 @@
 import 'package:crypto_v2/API/apiService.dart';
 import 'package:crypto_v2/component/AccountLinkage/AccountLinkageModel.dart';
+import 'package:crypto_v2/component/P2PTrade/MyP2PTransactions.dart';
+import 'package:crypto_v2/component/P2PTrade/P2PTradeModel.dart';
 import 'package:crypto_v2/component/User/UserModel.dart';
 import 'package:crypto_v2/screen/setting/themes.dart';
 import 'package:flutter/material.dart';
@@ -24,24 +26,43 @@ class _T1_profileState extends State<T1_profile> {
   User user = new User();
   AccountLinkage _accountLinkage;
   APIService apiService = new APIService();
+  List<P2PTradeModel> p2pTradeModelList = new List <P2PTradeModel>();
+  List<MyTransactions> p2pTradeCompleted = new List <MyTransactions>();
+  int transactions;
   bool loadCard = true;
 
   @override
   void initState() {
     super.initState();
     _accountLinkage = new AccountLinkage();
+    
+    apiService.getTradeList().then((value) {
+      transactions = 0;
+      setState(() {
+        p2pTradeModelList.addAll(value.toList());
+        for (var figure in p2pTradeModelList) {
+          transactions += figure.transactions;
+        }
+      });
+    });
+
+    apiService.getP2PTransactionListPerUser().then((value) {
+      setState(() {
+        p2pTradeCompleted.addAll(value.where((element) => element.status == 'COMPLETED').toList());
+        print(p2pTradeCompleted.length);
+      });
+    });
+
     fetchPageContent();
   }
 
   void fetchPageContent() async {
     var responseCurrentUser = await apiService.get('accounts/retrieve/');
     var responseAccountLinkage = await apiService.get('connect-mono/');
-    print(responseCurrentUser);
 
     setState(() {
       user = User.fromJson(responseCurrentUser['data'][0]);
-      _accountLinkage =
-          AccountLinkage.fromJson(responseAccountLinkage['data'][0]);
+      _accountLinkage = AccountLinkage.fromJson(responseAccountLinkage['data'][0]);
       loadCard = false;
     });
   }
@@ -209,12 +230,33 @@ class _T1_profileState extends State<T1_profile> {
                         animation: true,
                         percent: 0.1,
                         center: new Text(
-                          "0.0%",
+                          "${p2pTradeModelList.length}",
                           style: new TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 13.0),
                         ),
                         circularStrokeCap: CircularStrokeCap.round,
                         progressColor: Colors.lightBlueAccent,
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text("Transactions"),
+                      SizedBox(
+                        height: 15.0,
+                      ),
+                      new CircularPercentIndicator(
+                        radius: 60.0,
+                        lineWidth: 2.0,
+                        animation: true,
+                        percent: 0.1,
+                        center: new Text(
+                          "$transactions",
+                          style: new TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13.0),
+                        ),
+                        circularStrokeCap: CircularStrokeCap.round,
+                        progressColor: Colors.green,
                       ),
                     ],
                   ),
@@ -230,28 +272,7 @@ class _T1_profileState extends State<T1_profile> {
                         animation: true,
                         percent: 0.1,
                         center: new Text(
-                          "0.0%",
-                          style: new TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 13.0),
-                        ),
-                        circularStrokeCap: CircularStrokeCap.round,
-                        progressColor: Colors.green,
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: <Widget>[
-                      Text("Cancelled"),
-                      SizedBox(
-                        height: 15.0,
-                      ),
-                      new CircularPercentIndicator(
-                        radius: 60.0,
-                        lineWidth: 2.0,
-                        animation: true,
-                        percent: 0.1,
-                        center: new Text(
-                          "0.0%",
+                          "${p2pTradeCompleted.length}",
                           style: new TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 13.0),
                         ),

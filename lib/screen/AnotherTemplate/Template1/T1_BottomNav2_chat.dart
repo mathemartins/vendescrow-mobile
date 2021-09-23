@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:android_intent/android_intent.dart';
 import 'package:crypto_v2/screen/AnotherTemplate/Template1/chat_item/T1_chating_layout.dart';
 import 'package:crypto_v2/screen/setting/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class T1_chat extends StatefulWidget {
   ThemeBloc themeBloc;
@@ -23,7 +27,6 @@ class _T1_chatState extends State<T1_chat> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
-      ///
       /// Appbar
       ///
       appBar: AppBar(
@@ -32,7 +35,7 @@ class _T1_chatState extends State<T1_chat> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         centerTitle: true,
         title: Text(
-          "Welcome, Alphador",
+          "Hi, ",
           style: TextStyle(
               color: Colors.white, fontFamily: "Gotik", fontSize: 16.5),
         ),
@@ -47,50 +50,63 @@ class _T1_chatState extends State<T1_chat> {
       ///
       /// Body
       ///
-      body: Column(
-        children: <Widget>[
-          ///
-          /// ListView scroll horizontal under appbar
-          ///
-          Container(
-            width: double.infinity,
-            height: 110.0,
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: <Widget>[
-                _card("assets/avatars/avatar-1.jpg", "Alex"),
-                _card("assets/avatars/avatar-2.jpg", "Tom"),
-                _card("assets/avatars/avatar-3.jpg", "Halwey"),
-                _card("assets/avatars/avatar-4.jpg", "Ava"),
-                _card("assets/avatars/avatar-5.jpg", "Sarah"),
-                _card("assets/avatars/avatar-6.jpg", "Swift"),
-              ],
+      body: GestureDetector(
+        onTap: (){
+          if (Platform.isAndroid) {
+            AndroidIntent intent = AndroidIntent(
+              action: 'android.intent.action.MAIN',
+              category: 'android.intent.category.APP_EMAIL'
+            );
+            intent.launch().catchError((error) => false);
+          } else if (Platform.isIOS) {
+            launch("message://").catchError((error) => false);
+          }  
+        },
+        child: Column(
+          children: <Widget>[
+            ///
+            /// ListView scroll horizontal under appbar
+            ///
+            // Container(
+            //   width: double.infinity,
+            //   height: 110.0,
+            //   color: Theme.of(context).scaffoldBackgroundColor,
+            //   child: ListView(
+            //     scrollDirection: Axis.horizontal,
+            //     children: <Widget>[
+            //       _card("assets/avatars/avatar-1.jpg", "Alex"),
+            //       _card("assets/avatars/avatar-2.jpg", "Tom"),
+            //       _card("assets/avatars/avatar-3.jpg", "Halwey"),
+            //       _card("assets/avatars/avatar-4.jpg", "Ava"),
+            //       _card("assets/avatars/avatar-5.jpg", "Sarah"),
+            //       _card("assets/avatars/avatar-6.jpg", "Swift"),
+            //     ],
+            //   ),
+            // ),
+            Container(
+              width: double.infinity,
+              height: 1.5,
+              color: Colors.white12.withOpacity(0.1),
             ),
-          ),
-          Container(
-            width: double.infinity,
-            height: 1.5,
-            color: Colors.white12.withOpacity(0.1),
-          ),
-          SizedBox(
-            height: 90.0,
-          ),
-          Opacity(
-              opacity: 0.5,
-              child: Image.asset(
-                "assets/image/T1_noMessage.png",
-                height: 115.0,
-              )),
-          SizedBox(
-            height: 30.0,
-          ),
-          Text(
-            "No conversations yet!",
-            style: TextStyle(
-                fontFamily: "Popins", color: Colors.white24, fontSize: 17.0),
-          )
-        ],
+            SizedBox(
+              height: 90.0,
+            ),
+            Opacity(
+                opacity: 0.5,
+                child: Image.asset(
+                  "assets/image/T1_noMessage.png",
+                  height: 115.0,
+                )),
+            SizedBox(
+              height: 30.0,
+            ),
+            Text(
+              "Tap to send an email!",
+              style: TextStyle(
+                  fontFamily: "Popins", color: Colors.white24, fontSize: 17.0),
+            )
+          ],
+        ),
       ),
     );
   }

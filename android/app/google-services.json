@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:288233522843:android:c762049c1a6972feaea83e",
+        "mobilesdk_app_id": "1:288233522843:android:bdd2cd7d9ef4aa4eaea83e",
         "android_client_info": {
-          "package_name": "com.jipau.crypto_v2"
+          "package_name": "com.vendescrow.vendescrow"
         }
       },
       "oauth_client": [
@@ -29,6 +29,13 @@
             {
               "client_id": "288233522843-ril4gdqh1tshkpp3k5gi11rua2k3sr1o.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "288233522843-qn566jbhgbd4bnql239ndiji093du01g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.jipau.cryptoV2"
+              }
             }
           ]
         }

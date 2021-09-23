@@ -54,7 +54,7 @@ class _marketState extends State<market> with SingleTickerProviderStateMixin {
           tabs: <Widget>[
             new Tab(
               child: Text(
-                "FAV",
+                "Fav",
                 style: TextStyle(fontFamily: "Popins"),
               ),
             ),

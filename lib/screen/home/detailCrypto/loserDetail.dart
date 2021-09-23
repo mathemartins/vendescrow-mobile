@@ -112,7 +112,7 @@ class _loserDetailState extends State<loserDetail> {
               ],
             ),
           ),
-          _buttonBottom(),
+          //_buttonBottom(), - activate when consuming nomics trade data
         ],
       ),
     );

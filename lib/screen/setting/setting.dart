@@ -50,8 +50,7 @@ class _settingState extends State<setting> {
     setState(() {
       user = User.fromJson(responseCurrentUser['data'][0]);
       userLock = UserLock.fromJson(responseUserLock['data'][0]);
-      _accountLinkage =
-          AccountLinkage.fromJson(responseUserAccountLinkage['data'][0]);
+      _accountLinkage = AccountLinkage.fromJson(responseUserAccountLinkage['data'][0]);
       loadCard = false;
     });
   }
@@ -136,7 +135,7 @@ class _settingState extends State<setting> {
                   ),
                   listSetting(
                       "Sync Bank Account",
-                      _accountLinkage.exchangeToken.isEmpty
+                      _accountLinkage.exchangeToken == null
                           ? "Not Connected"
                           : "Connected",
                       'mono-link',
@@ -159,18 +158,18 @@ class _settingState extends State<setting> {
                             pageBuilder: (_, __, ___) => new market()));
                       },
                       child: listSetting(
-                          "Company, Terms & Conditions, Faqs",
-                          "Vendescrow",
-                          'vendescrow-slug-url',
-                          new T1_bottomNav())),
+                        "Company, Terms & Conditions, Faqs",
+                        "Vendescrow",
+                        'vendescrow-slug-url',
+                        new T1_bottomNav(),
+                      ),),
                 ],
               ),
             ),
           );
   }
 
-  Widget listSetting(
-      String header, String title, String linkSlug, classInstance) {
+  Widget listSetting(String header, String title, String linkSlug, classInstance) {
     return GestureDetector(
       onTap: () {
         Navigator.of(context)
@@ -186,7 +185,7 @@ class _settingState extends State<setting> {
               header,
               style: TextStyle(
                   color: Theme.of(context).hintColor,
-                  fontFamily: "Sans",
+                  fontFamily: "Popins",
                   fontSize: 13.0),
             ),
             SizedBox(
@@ -198,9 +197,9 @@ class _settingState extends State<setting> {
                 Text(
                   title,
                   style: TextStyle(
-                      fontSize: 17.0,
+                      fontSize: 13.0,
                       fontFamily: "Popins",
-                      letterSpacing: 1.5,
+                      letterSpacing: 1.0,
                       fontWeight: FontWeight.w300),
                 ),
                 Icon(Icons.keyboard_arrow_right)

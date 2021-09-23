@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>288233522843-qn566jbhgbd4bnql239ndiji093du01g.apps.googleusercontent.com</string>
+	<string>288233522843-ml78vg4f9mjivr712tqqu6309n6s901q.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.288233522843-qn566jbhgbd4bnql239ndiji093du01g</string>
+	<string>com.googleusercontent.apps.288233522843-ml78vg4f9mjivr712tqqu6309n6s901q</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCpA-9rAJxslLzYVBZLFGAVrWDhQcj4sRI</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.jipau.cryptoV2</string>
+	<string>com.vendescrow.vendescrow</string>
 	<key>PROJECT_ID</key>
 	<string>vendescrow-6796c</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:288233522843:ios:2614c3c1e1eb3d65aea83e</string>
+	<string>1:288233522843:ios:15c3e3580a9cf258aea83e</string>
 </dict>
 </plist>

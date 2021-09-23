@@ -49,6 +49,8 @@ class FirebaseNotifications {
             remoteMessage.notification.title, remoteMessage.notification.body);
       }
     });
+
+    // Handle When user opens message
     FirebaseMessaging.onMessageOpenedApp.listen((remoteMessage) {
       print('Received Opened App Message: $remoteMessage');
       if (Platform.isIOS)
@@ -71,7 +73,7 @@ class FirebaseNotifications {
 
   static void showNotification(title, body) async {
     var androidChannel = AndroidNotificationDetails(
-        'com.jipau.crypto_v2', 'Vendescrow ', 'World Safest P2P Trading App',
+        'com.vendescrow.vendescrow', 'Vendescrow ', 'World Safest P2P Trading App',
         autoCancel: false,
         ongoing: true,
         importance: Importance.max,

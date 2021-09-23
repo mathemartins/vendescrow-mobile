@@ -14,8 +14,8 @@ class LiveCrypto {
   String lastUpdated;
   Quote quote;
 
-  LiveCrypto(
-      {this.id,
+  LiveCrypto({
+      this.id,
       this.name,
       this.symbol,
       this.slug,
@@ -28,7 +28,8 @@ class LiveCrypto {
       this.platform,
       this.cmcRank,
       this.lastUpdated,
-      this.quote});
+      this.quote
+  });
 
   LiveCrypto.fromJson(Map<String, dynamic> json) {
     id = json['id'];

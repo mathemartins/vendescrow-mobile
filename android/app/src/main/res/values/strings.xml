@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="freshchat_file_provider_authority">com.jipau.crypto_v2.provider</string>
+</resources>
+

@@ -3,11 +3,13 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:crypto_v2/Helpers/CurrencySymbol.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:html/parser.dart';
+import 'package:intl/intl.dart';
 
 import 'CircularLoadingWidget.dart';
 
@@ -113,9 +115,7 @@ class Helper {
   }
 
   static Uri getExternalUri(String urlpath) {
-    String _path =
-        Uri.parse(GlobalConfiguration().getValue('coin_market_cap_api_url'))
-            .path;
+    String _path = Uri.parse(GlobalConfiguration().getValue('coin_market_cap_api_url')).path;
     if (!_path.endsWith('/')) {
       _path += '/';
     }
@@ -126,5 +126,31 @@ class Helper {
         path: _path + urlpath);
     print(uri);
     return uri;
+  }
+
+  static numberFormatter(double amount) {
+    var formatter = NumberFormat("#,##0.00", "en_US");
+    return "${formatter.format(amount)}";
+  }
+
+  static getUserPriceOfAssetInUserFiat(double dollarRate, String country, String creatorRateInDollar, price) {
+    double assetPriceInDollar = double.parse(price.toString());
+    double assetPrice = assetPriceInDollar * double.parse(creatorRateInDollar);
+    var formattedFigure = numberFormatter(assetPrice);
+    final currencySymbol = getUserCurrency(country);
+    return "$currencySymbol $formattedFigure";
+  }
+
+  static getFormattedFiat(String fiatAmount, String country) {
+    if (fiatAmount.isEmpty) {
+      fiatAmount = "0";
+    }
+    String userCurrency = getUserCurrency(country);
+    double amountInFiat = double.parse(fiatAmount);
+    return "$userCurrency ${Helper.numberFormatter(amountInFiat)}";
+  }
+
+  static truncateString(String data, int length) {
+    return (data.length >= length) ? '${data.substring(0, length)}..' : data;
   }
 }

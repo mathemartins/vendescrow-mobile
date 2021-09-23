@@ -224,8 +224,7 @@ class _T1_wallet_detailState extends State<T1_wallet_detail> {
             child: TextFormField(
               keyboardType: TextInputType.number,
               onSaved: (input) => userLock.pin = input,
-              validator: (input) =>
-                  input.isEmpty ? "Pin Must Be A 4 Digit" : null,
+              validator: (input) => input.isEmpty ? "Pin Must Be A 4 Digit" : null,
               inputFormatters: [
                 new LengthLimitingTextInputFormatter(4),
                 FilteringTextInputFormatter.digitsOnly,

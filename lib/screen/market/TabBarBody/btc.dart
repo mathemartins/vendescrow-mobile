@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:crypto_v2/API/apiService.dart';
+import 'package:crypto_v2/Helpers/helper.dart';
 import 'package:crypto_v2/component/User/UserModel.dart';
+import 'package:crypto_v2/component/market/CoinModel.dart';
 import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
-import 'package:crypto_v2/component/market/LiveCrypto.dart';
 import 'package:crypto_v2/component/market/btcModel.dart';
 import 'package:crypto_v2/screen/home/LiveCryptoAsset.dart';
 import 'package:crypto_v2/screen/market/detailCrypto/btcDetail.dart';
 import 'package:flutter/material.dart';
+import 'package:global_configuration/global_configuration.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class btc extends StatefulWidget {
   final Widget child;
@@ -17,21 +23,38 @@ class btc extends StatefulWidget {
 }
 
 class _btcState extends State<btc> {
-  List<LiveCrypto> _liveCrypto = List<LiveCrypto>();
+  // static String url = '${GlobalConfiguration().getValue('websocket_base_url')}ws/coins/';
+  // final WebSocketChannel channel = IOWebSocketChannel.connect(url);
+  List<Coins> _coins = List<Coins>();
   APIService apiService = new APIService();
   User user = User();
   BlackMarketRate _blackMarketRate = BlackMarketRate();
   bool loadData = true;
 
+
+  // void getDataFromWebsocket() async {
+  //   channel.stream.listen((event) {
+  //     final serializePayload = json.decode(event);
+  //     final liveCoin = List<Coins>();
+  //     for (var data in serializePayload) {
+  //       liveCoin.add(Coins.fromJson(data));
+  //     }
+  //     setState(() {
+  //       _coins = liveCoin.length > 0 ? liveCoin : [];
+  //     });
+  //   });
+  // }
+
   @override
   void initState() {
     super.initState();
-    apiService.getLiveCryptoData().then((value) {
+    apiService.getLiveCoinsData().then((value) {
       setState(() {
-        _liveCrypto.addAll(value);
+        _coins.addAll(value);
       });
     });
 
+    // getDataFromWebsocket();
     fetchPageData();
   }
 
@@ -49,10 +72,9 @@ class _btcState extends State<btc> {
   Widget build(BuildContext context) {
     return Container(
         child: ListView(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(
-              left: 0.0, right: 0.0, top: 7.0, bottom: 2.0),
+          children: <Widget>[
+            Padding(
+          padding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 7.0, bottom: 2.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -87,27 +109,20 @@ class _btcState extends State<btc> {
             ],
           ),
         ),
-        SizedBox(
-          height: 0.0,
-        ),
+            SizedBox(height: 0.0,),
 
-        /// check the condition if image data from server firebase loaded or no
-        /// if image loaded true (image still downloading from server)
-        /// Card to set card loading animation
+            /// check the condition if image data from server firebase loaded or no
+            /// if image loaded true (image still downloading from server)
+            /// Card to set card loading animation
 
-        loadData
-            ? _loadingData(context)
-            : _dataLoaded(context, _liveCrypto, user, _blackMarketRate),
+            loadData ? _loadingData(context) : _dataLoaded(context, _coins, user, _blackMarketRate),
       ],
     ));
   }
 }
 
-///
-///
+
 /// Calling imageLoading animation for set a grid layout
-///
-///
 Widget _loadingData(BuildContext context) {
   return Container(
     child: ListView.builder(
@@ -234,8 +249,7 @@ Widget loadingCard(BuildContext ctx, btcMarket item) {
   );
 }
 
-Widget _dataLoaded(
-    BuildContext context, List<LiveCrypto> liveCrypto, user, blackmarketRate) {
+Widget _dataLoaded(BuildContext context, List<Coins> liveCrypto, user, blackmarketRate) {
   return Container(
     child: ListView.builder(
       shrinkWrap: true,
@@ -248,8 +262,7 @@ Widget _dataLoaded(
   );
 }
 
-Widget card(BuildContext ctx, LiveCrypto item, User user,
-    BlackMarketRate blackMarketRate) {
+Widget card(BuildContext ctx, Coins item, User user, BlackMarketRate blackMarketRate) {
   return Padding(
     padding: const EdgeInsets.only(top: 7.0),
     child: Column(
@@ -271,8 +284,14 @@ Widget card(BuildContext ctx, LiveCrypto item, User user,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Padding(
-                        padding: const EdgeInsets.only(left: 5.0, right: 12.0),
-                        child: Text(item.cmcRank.toString())),
+                      padding: const EdgeInsets.only(left: 5.0, right: 12.0),
+                      child: Image.network(
+                        item.image,
+                        height: 22.0,
+                        fit: BoxFit.contain,
+                        width: 22.0,
+                      ),
+                    ),
                     Container(
                       width: 95.0,
                       child: Column(
@@ -282,17 +301,13 @@ Widget card(BuildContext ctx, LiveCrypto item, User user,
                           Row(
                             children: <Widget>[
                               Text(
-                                item.symbol,
-                                style: TextStyle(
-                                    fontFamily: "Popins", fontSize: 16.5),
+                                Helper.truncateString(item.name, 10),
+                                style: TextStyle(fontFamily: "Popins", fontSize: 13),
                               ),
                             ],
                           ),
                           Text(
-                            getPriceInUserFiat(
-                                item.quote.uSD.price,
-                                blackMarketRate.country,
-                                blackMarketRate.dollarRate),
+                            item.price.toString(),
                             style: TextStyle(
                                 fontFamily: "Popins",
                                 fontSize: 11.5,
@@ -311,15 +326,14 @@ Widget card(BuildContext ctx, LiveCrypto item, User user,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      getPriceInUserFiat(item.quote.uSD.price,
-                          blackMarketRate.country, blackMarketRate.dollarRate),
+                      getPriceInUserFiat(item.price, blackMarketRate.country, blackMarketRate.dollarRate),
                       style: TextStyle(
                           fontFamily: "Popins",
-                          fontSize: 14.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      "\u{0024} ${item.quote.uSD.price.toStringAsFixed(2)}",
+                      "\u{0024} ${item.price.toStringAsFixed(2)}",
                       style: TextStyle(
                           fontFamily: "Popins",
                           fontSize: 11.5,
@@ -334,15 +348,13 @@ Widget card(BuildContext ctx, LiveCrypto item, User user,
                     height: 25.0,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(2.0)),
-                      color: item.quote.uSD.percentChange24h < 0
-                          ? Colors.redAccent
-                          : Color(0xFF00C087),
+                      color: getGradientColor(item.priceChangePercentageInTheLast24h)
                     ),
                     child: Center(
                         child: Padding(
                       padding: const EdgeInsets.only(left: 5.0, right: 5.0),
                       child: Text(
-                        "${item.quote.uSD.percentChange24h.toStringAsFixed(2)}%",
+                        "${item.priceChangePercentageInTheLast24h.toStringAsFixed(2)}%",
                         style: TextStyle(
                             fontWeight: FontWeight.w600, color: Colors.white),
                       ),
@@ -363,3 +375,13 @@ Widget card(BuildContext ctx, LiveCrypto item, User user,
     ),
   );
 }
+
+ getGradientColor(priceChangePercentageInTheLast24h) {
+   if (priceChangePercentageInTheLast24h == null) {
+     return Colors.redAccent;
+   } else {
+   return priceChangePercentageInTheLast24h < 0 ? Colors.redAccent : Color(0xFF00C087);
+   }
+}
+
+

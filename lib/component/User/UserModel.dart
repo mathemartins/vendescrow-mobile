@@ -17,6 +17,7 @@ class User {
   String message;
   String password;
   String password2;
+  dynamic error;
 
   User(
       {this.username,
@@ -34,7 +35,8 @@ class User {
       this.firebaseToken,
       this.message,
       this.password,
-      this.password2});
+      this.password2,
+      this.error});
 
   User.fromJson(Map<String, dynamic> json) {
     username = json['username'];
@@ -56,6 +58,11 @@ class User {
     token = json['token'];
     message = json['message'];
   }
+
+  User.fromUnsuccessfulJson(Map<String, dynamic> json) {
+    error = json;
+  }
+
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();

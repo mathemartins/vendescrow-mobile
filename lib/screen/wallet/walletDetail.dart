@@ -7,6 +7,7 @@ import 'package:crypto_v2/component/AssetsWallet/EthereumWallet.dart';
 import 'package:crypto_v2/component/market/FiatBlackMarket.dart';
 import 'package:crypto_v2/component/market/cryptoValueDetail.dart';
 import 'package:crypto_v2/component/style.dart';
+import 'package:crypto_v2/screen/transactions/transaction_history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -21,8 +22,7 @@ class walletDetail extends StatefulWidget {
   _walletDetailState createState() => _walletDetailState();
 }
 
-class _walletDetailState extends State<walletDetail>
-    with SingleTickerProviderStateMixin {
+class _walletDetailState extends State<walletDetail> with SingleTickerProviderStateMixin {
   APIService apiService = new APIService();
   EthereumWallet userEthWallet = EthereumWallet();
   BlackMarketRate blackMarketRate = BlackMarketRate();
@@ -34,6 +34,7 @@ class _walletDetailState extends State<walletDetail>
   EthereumTransferRequestModel _ethereumTransferRequestModel;
 
   bool loadData = true;
+  double _minTransfer;
 
   @override
   void initState() {
@@ -43,18 +44,25 @@ class _walletDetailState extends State<walletDetail>
   }
 
   void fetchPageData(String asset) async {
+    print(asset);
     var responseFiatData = await apiService.get('fiat-rates/');
     var responseUserWallet = await apiService.get('wallet/');
     var responseEthGasFee = await apiService.getEthGasFee();
-    var responseCryptoValueDetail =
-        await apiService.getCryptoValueDetail(asset);
+    var responseCryptoValueDetail = await apiService.getCryptoValueDetail(asset);
     setState(() {
       userEthWallet = EthereumWallet.fromJson(responseUserWallet['data'][0]);
       blackMarketRate = BlackMarketRate.fromJson(responseFiatData['data'][0]);
       ethereumNetworkFee = EthereumNetworkFee.fromJson(responseEthGasFee);
-      cryptoValueDetail = CryptoValueDetail.fromJson(
-          responseCryptoValueDetail['data']['$asset']);
+      cryptoValueDetail = CryptoValueDetail.fromJson(responseCryptoValueDetail['data']['$asset']);
       loadData = false;
+
+      if (asset == 'btc') {
+        _minTransfer = 0.00003;
+      } else if (asset == 'ltc') {
+        _minTransfer = 0.0003;
+      } else if (asset == 'doge') {
+        _minTransfer = 3;
+      }
     });
   }
 
@@ -146,7 +154,7 @@ class _walletDetailState extends State<walletDetail>
                             padding: const EdgeInsets.only(
                                 left: 20.0, right: 20.0, top: 20.0),
                             child: displayReceiveAsset(context, userEthWallet,
-                                blackMarketRate, cryptoValueDetail),
+                                blackMarketRate, cryptoValueDetail, widget.assetName),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
@@ -165,7 +173,7 @@ class _walletDetailState extends State<walletDetail>
   }
 
   Widget displayReceiveAsset(BuildContext context, EthereumWallet userEthWallet,
-      BlackMarketRate blackMarketRate, CryptoValueDetail cryptoValueDetail) {
+      BlackMarketRate blackMarketRate, CryptoValueDetail cryptoValueDetail, String assetName) {
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
@@ -278,16 +286,23 @@ class _walletDetailState extends State<walletDetail>
                 SizedBox(
                   height: 15.0,
                 ),
-                Container(
-                  height: 40.0,
-                  width: 300.0,
-                  color: Theme.of(context).primaryColor,
-                  child: Center(
-                    child: Text(
-                      "Balance: ${getWalletBalComplete(userEthWallet.balance.toString(), cryptoValueDetail.quote.uSD.price, blackMarketRate.country, blackMarketRate.dollarRate)}",
-                      style: TextStyle(
-                          color: Theme.of(context).textSelectionColor,
-                          fontFamily: "avenir"),
+                GestureDetector(
+                  // onTap: () {
+                  //   Navigator.of(context).push(PageRouteBuilder(
+                  //       pageBuilder: (_, __, ___) => new assetTransactionHistory(asset: assetName)
+                  //   ));
+                  // },
+                  child: Container(
+                    height: 40.0,
+                    width: 300.0,
+                    color: Theme.of(context).primaryColor,
+                    child: Center(
+                      child: Text(
+                        "Balance: ${getWalletBalComplete(userEthWallet.balance.toString(), cryptoValueDetail.quote.uSD.price, blackMarketRate.country, blackMarketRate.dollarRate)}",
+                        style: TextStyle(
+                            color: Theme.of(context).textSelectionColor,
+                            fontFamily: "avenir"),
+                      ),
                     ),
                   ),
                 )
@@ -362,12 +377,10 @@ class _walletDetailState extends State<walletDetail>
     return "${formatter.format(amount)}";
   }
 
-  getWalletBalComplete(
-      String balance, double price, String country, double dollarRate) {
+  getWalletBalComplete(String balance, double price, String country, double dollarRate) {
     final balanceIndollars = double.parse(balance) * price;
     final localFiat = balanceIndollars * dollarRate;
-    final approxFiat =
-        numberFormatter(localFiat); //localFiat.toStringAsFixed(2);
+    final approxFiat = numberFormatter(localFiat); //localFiat.toStringAsFixed(2);
     final currencySymbol = getUserCurrency(country);
 
     return '$currencySymbol $approxFiat';
@@ -387,14 +400,11 @@ class _walletDetailState extends State<walletDetail>
           Container(
             width: double.infinity,
             height: 100.0,
-            decoration: BoxDecoration(
-                color: Theme.of(context).canvasColor,
-                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            decoration: BoxDecoration(color: Theme.of(context).canvasColor,borderRadius: BorderRadius.all(Radius.circular(10.0))),
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding:
-                      const EdgeInsets.only(left: 20.0, right: 20.0, top: 19.0),
+                  padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 19.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
@@ -530,6 +540,8 @@ class _walletDetailState extends State<walletDetail>
                           return "Your balance is ${availableAsset.toString()}, cannot transfer above available balance";
                         } else if (theValue == 0) {
                           return "Cannot make zero('0') transactions";
+                        } else if (theValue < _minTransfer) {
+                          return "Transfers should be above $_minTransfer";
                         } else {
                           return null;
                         }
@@ -576,7 +588,7 @@ class _walletDetailState extends State<walletDetail>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Text(
-                "Adjusted Amount Due To GasFee",
+                "Receiver Would Get (Due To Network Fee)",
                 style: TextStyle(color: Theme.of(context).hintColor),
               ),
               Text(
@@ -657,16 +669,14 @@ class _walletDetailState extends State<walletDetail>
     );
   }
 
-  String getUserInputInFiat(
-      String amount, double price, double dollarRate, String country) {
+  String getUserInputInFiat(String amount, double price, double dollarRate, String country) {
     if (amount == null) {
       amount = "0";
     }
     final assetUnit = double.parse(amount);
     final inputIndollar = assetUnit * price;
     final inputInFiat = inputIndollar * dollarRate;
-    final dataInputInFiat =
-        numberFormatter(inputInFiat); // .toStringAsFixed(2);
+    final dataInputInFiat = numberFormatter(inputInFiat); // .toStringAsFixed(2);
     final currencySymbol = getUserCurrency(country);
     return '$currencySymbol $dataInputInFiat';
   }
@@ -685,8 +695,7 @@ class _walletDetailState extends State<walletDetail>
       amount = "0";
     }
     final gasFeeInGwei = fast / 10;
-    final fastGas =
-        double.parse(((25000 * gasFeeInGwei) * 0.000000001).toStringAsFixed(8));
+    final fastGas = double.parse(((25000 * gasFeeInGwei) * 0.000000001).toStringAsFixed(5));
     return double.parse(amount) - fastGas;
   }
 }
